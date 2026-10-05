@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: crystalforge
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: CRYSTALFORGE_DB
+        value: /tmp/crystalforge.db
+      - key: CRYSTALFORGE_SECURE_COOKIE
+        value: "1"

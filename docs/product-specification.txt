@@ -1,0 +1,1350 @@
+Build a complete, production-style full-stack web application called:
+
+CRYSTALFORGE
+AI-Powered Crystal & Battery Material Discovery Platform
+
+Use these two datasets:
+
+1. crystalforge_dataset_enriched.csv
+   - Main battery/material dataset
+   - Used for material records, voltage target, material properties, ML training/testing, structure metadata, model-related information, train/test split and prediction outputs
+
+2. crystalforge_element_reference.csv
+   - Supporting reference dataset
+   - Used for element prices, atomic weight, elemental abundance, criticality and sustainability calculations
+
+The application must be fully functional, not a static UI mockup.
+
+EVERY button, page, filter, chart, prediction action, comparison, history action, save option and report function must work.
+
+==================================================
+1. DESIGN DIRECTION
+==================================================
+
+Use my uploaded reference website images as the main visual inspiration.
+
+The website must look like a world-class professional scientific SaaS product.
+
+It must NOT look like:
+- a student project
+- generic Bootstrap dashboard
+- basic template
+- AI-generated infographic
+- congested admin panel
+
+The design must have:
+- large whitespace
+- clean layouts
+- premium modern typography
+- strong visual hierarchy
+- subtle rounded cards
+- thin borders
+- modern scientific charts
+- clean spacing
+- minimal navigation
+- soft transitions
+- responsive layouts
+- world-class product feel
+
+Use:
+- mostly white/light backgrounds
+- lime/olive accent inspired by the reference images
+- occasional charcoal/dark sections for important scientific visualizations
+- small amounts of muted scientific blue when needed
+
+Avoid:
+- excessive gradients
+- neon colors
+- excessive glow
+- purple-heavy styling
+- cyberpunk appearance
+- clutter
+- giant dense tables
+- unnecessary cards
+- random stock images
+
+Whitespace is important.
+
+==================================================
+2. IMPORTANT STRUCTURE RULE
+==================================================
+
+Keep FRONTEND, BACKEND and MACHINE LEARNING completely separated.
+
+Suggested folder structure:
+
+CrystalForge/
+│
+├── frontend/
+├── backend/
+├── ml/
+├── data/
+├── models/
+├── reports/
+├── tests/
+├── README.md
+└── requirements.txt
+
+Do not put all functionality into one large file.
+
+==================================================
+3. RECOMMENDED TECH STACK
+==================================================
+
+FRONTEND:
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+- React Router
+- Recharts or Chart.js
+- Three.js / react-three-fiber only for real crystal structure rendering
+- Lucide icons
+
+BACKEND:
+- Python
+- FastAPI
+- Pydantic
+- Pandas
+- NumPy
+- SQLite
+- SQLAlchemy if needed
+
+MACHINE LEARNING:
+- scikit-learn
+- pandas
+- numpy
+- joblib
+
+Models to evaluate:
+- Random Forest Regressor
+- Support Vector Regression
+- Kernel Ridge Regression
+- Gradient Boosting / XGBoost if available
+- simple regression baseline
+
+Select the final production model based on evaluation results.
+
+Do not hardcode one model as “best” without testing.
+
+==================================================
+4. MAIN NAVIGATION
+==================================================
+
+Keep the navigation simple.
+
+Main navbar:
+
+Home
+Predict Material
+Discovery Studio
+Materials
+Analytics
+History
+
+Secondary options can be placed inside a profile/menu:
+
+Saved Materials
+Compare
+Reports
+Model Information
+
+Do not put 10 to 15 items in the navbar.
+
+==================================================
+5. HOME PAGE
+==================================================
+
+Design the Home page like a premium scientific startup landing page.
+
+Hero section:
+
+Small badge:
+AI-POWERED MATERIAL DISCOVERY
+
+Main heading:
+
+Discover Better
+Battery Materials with AI
+
+Supporting text:
+
+Predict electrode voltage, evaluate material properties and screen battery materials using data-driven material intelligence.
+
+Primary CTA:
+Start Exploring
+
+Secondary CTA:
+View Materials
+
+Use:
+- large centered or balanced hero
+- large typography
+- subtle scientific/crystal pattern
+- lots of whitespace
+- premium buttons
+
+Do NOT show a giant dashboard in the hero.
+
+==================================================
+6. HOME PAGE FEATURES
+==================================================
+
+Show only 3 or 4 major feature blocks.
+
+1. Voltage Prediction
+Predict electrode voltage using trained regression models.
+
+2. Material Intelligence
+Explore structural, energetic and electrochemical properties.
+
+3. Cost & Sustainability
+Estimate raw-material cost and evaluate elemental scarcity/criticality.
+
+4. Crystal Structure
+View real crystal structures when actual CIF/Materials Project structure data exists.
+
+Do not show dozens of small feature cards.
+
+==================================================
+7. VERY IMPORTANT — NO FAKE CRYSTAL IMAGE
+==================================================
+
+Do NOT generate a fake predicted crystal image.
+
+If a real crystal structure exists:
+
+Material ID
+→ Materials Project / CIF
+→ Actual structure
+→ Interactive 3D viewer
+
+If a structure does not exist, show:
+
+“Structure unavailable”
+
+Never generate a random crystal visualization and call it scientific data.
+
+==================================================
+8. REMOVE THESE INPUTS COMPLETELY
+==================================================
+
+Do NOT include:
+
+- Allowed Elements periodic-table selector
+- Excluded Elements periodic-table selector
+
+Remove those two large tables completely.
+
+They make the interface congested.
+
+The input interface must stay clean and simple.
+
+==================================================
+9. PREDICT MATERIAL PAGE
+==================================================
+
+Purpose:
+A researcher already knows the material and wants its voltage.
+
+Use a simple form.
+
+Main inputs:
+
+Material Formula
+Example:
+LiFePO4
+
+Working Ion:
+- Li
+- Mg
+- Ca
+- Zn
+- Y
+- Al
+
+Do NOT show Na or K.
+
+Crystal System
+
+Space Group
+
+Ion Fraction / Concentration
+
+Optional Advanced Parameters can be hidden inside:
+“Advanced Parameters”
+
+Do NOT expose the 100+ ML feature columns to users.
+
+The backend should automatically calculate or retrieve engineered features.
+
+Main button:
+
+Predict Voltage
+
+==================================================
+10. PREDICTION PROCESS UI
+==================================================
+
+When prediction is running, show a clean scientific loading process:
+
+Preparing material features
+✓
+
+Processing composition descriptors
+✓
+
+Running voltage model
+✓
+
+Calculating uncertainty
+✓
+
+Loading material properties
+✓
+
+Do not show fake phrases like:
+“AI searching millions of materials”
+unless the application is truly doing that.
+
+==================================================
+11. MAIN PREDICTION OUTPUT
+==================================================
+
+The most important result is:
+
+PREDICTED VOLTAGE
+
+Example:
+
+3.42 V
+
+Also show uncertainty:
+
+3.42 V ± 0.31 V
+
+or
+
+Prediction interval:
+3.12 – 3.72 V
+
+Do NOT display fake accuracy percentages such as:
+“99% accurate”
+
+unless actually measured.
+
+==================================================
+12. RESULT PAGE
+==================================================
+
+Use the uploaded clean dashboard reference as the style.
+
+The page must be spacious.
+
+Show:
+
+MATERIAL SUMMARY
+- Formula
+- Working Ion
+- Material ID
+- Crystal System
+- Space Group
+- Bravais Lattice
+
+MAIN METRICS
+- Predicted Voltage
+- Gravimetric Capacity
+- Volumetric Capacity
+- Band Gap
+
+SECONDARY METRICS
+- Formation Energy
+- Energy Above Hull
+- Maximum Volume Change
+- Estimated Raw-Material Cost
+- Sustainability Score
+
+Do not show 20 cards at the same time.
+
+Use sections, tabs or expandable panels.
+
+==================================================
+13. DATA MEANING
+==================================================
+
+Clearly distinguish four types of information:
+
+PREDICTED:
+- Electrode Voltage
+
+DATASET-DERIVED:
+- Capacity
+- Band Gap
+- Formation Energy
+- Energy Above Hull
+- Crystal System
+- Space Group
+- Volume Change
+
+CALCULATED:
+- Estimated Raw-Material Cost
+- Sustainability Score
+- Ranking Score
+
+EXTERNALLY LINKED / RETRIEVED:
+- Real CIF crystal structure
+- Materials Project structure
+
+Never present everything as “AI predicted”.
+
+==================================================
+14. COST ESTIMATION
+==================================================
+
+Cost must NOT be generated randomly.
+
+Do NOT predict cost using the voltage model.
+
+Use:
+crystalforge_element_reference.csv
+
+Calculation flow:
+
+Chemical Formula
+→ Element Composition
+→ Atomic/Mass Fractions
+→ Element Price Reference
+→ Estimated Raw-Material Cost
+
+Display:
+
+Estimated Raw-Material Cost
+$XX.XX / kg
+
+Also show:
+
+“Based on reference elemental raw-material prices.
+This is not final battery manufacturing cost.”
+
+Add a button:
+
+View Cost Methodology
+
+==================================================
+15. COST METHODOLOGY
+==================================================
+
+When opened, show something like:
+
+LiFePO4
+
+Li contribution    $...
+Fe contribution    $...
+P contribution     $...
+O contribution     $...
+
+Estimated Total    $... / kg
+
+Also display:
+- source/reference
+- cost status
+- calculation method
+
+==================================================
+16. SUSTAINABILITY
+==================================================
+
+Use the element reference dataset.
+
+Calculate a CrystalForge sustainability screening score using:
+
+- crust abundance
+- critical mineral status
+- material composition
+
+Display:
+
+Sustainability Score
+82 / 100
+
+Also show:
+
+Critical Elements:
+Li, Ni, etc.
+
+Scarcity Risk:
+Low / Medium / High
+
+Important:
+This is a CrystalForge screening score.
+
+Do NOT call it an official environmental certification.
+
+==================================================
+17. DISCOVERY STUDIO
+==================================================
+
+Purpose:
+The user does NOT know the exact material.
+
+The user enters desired properties.
+
+Keep this page extremely clean.
+
+Inputs:
+
+Working Ion
+Li / Mg / Ca / Zn / Y / Al
+
+Target Voltage
+Example:
+3.0 V – 4.2 V
+
+Crystal System
+Optional
+
+Space Group
+Optional
+
+Maximum Estimated Cost
+Optional
+
+Cost Priority
+Low ↔ High
+
+Sustainability Priority
+Low ↔ High
+
+Performance Priority
+Low ↔ High
+
+Main button:
+
+Discover Materials
+
+DO NOT ADD:
+- Allowed Elements table
+- Excluded Elements table
+
+==================================================
+18. DISCOVERY ENGINE
+==================================================
+
+Discovery must use existing candidate materials from the dataset.
+
+Flow:
+
+User Requirements
+→ Candidate Retrieval
+→ Constraint Filtering
+→ Voltage Prediction / Property Retrieval
+→ Cost Calculation
+→ Sustainability Calculation
+→ Multi-Objective Scoring
+→ Candidate Ranking
+→ Top Material Results
+
+Do not pretend to invent scientifically valid new materials unless a real material-generation model exists.
+
+==================================================
+19. RANKING SYSTEM
+==================================================
+
+Use transparent scoring.
+
+Concept:
+
+Final Score =
+Voltage Match
++ Performance Contribution
++ Cost Contribution
++ Sustainability Contribution
++ Stability Contribution
+
+Weights should come from user-selected priorities.
+
+Add:
+
+“Why ranked #1?”
+
+Example explanation:
+
+“This material ranks highly because its predicted voltage closely matches the requested voltage, its estimated raw-material cost is relatively low, and its stability indicators are favorable.”
+
+==================================================
+20. DISCOVERY RESULTS
+==================================================
+
+Do NOT use a huge dense table as the main view.
+
+Use large clean cards or rows.
+
+Example:
+
+LiFePO4
+
+Voltage
+3.42 V
+
+Estimated Cost
+$XX/kg
+
+Sustainability
+84/100
+
+Stability
+Good
+
+Match Score
+91%
+
+Actions:
+View Material
+Compare
+Save
+
+Display around 5–10 results at once.
+
+==================================================
+21. MATERIAL DETAILS PAGE
+==================================================
+
+Create a premium scientific profile page.
+
+Header example:
+
+LiFePO4
+
+Tags:
+Li-ion
+Orthorhombic
+High Match
+
+Sections:
+
+Overview
+Electrochemical Properties
+Structure
+Stability
+Economics
+Sustainability
+Model Explanation
+Source & Provenance
+
+Use tabs or clean sections.
+
+Do not show everything in one giant page.
+
+==================================================
+22. REAL 3D CRYSTAL VIEWER
+==================================================
+
+Use actual structure data only.
+
+Use these fields when available:
+
+preferred_structure_mp_id
+materials_project_structure_url
+CIF mapping information
+
+Viewer controls:
+
+Rotate
+Zoom
+Reset
+Atoms
+Bonds
+Unit Cell
+Element Legend
+Fullscreen
+
+The viewer must be interactive.
+
+Do not fake atomic coordinates.
+
+==================================================
+23. STRUCTURE FALLBACK
+==================================================
+
+If CIF is unavailable, show:
+
+Crystal System:
+Orthorhombic
+
+Space Group:
+Pnma
+
+Bravais Lattice:
+...
+
+Message:
+
+“Full atomic structure is not available for this material.”
+
+Never generate a fake structure.
+
+==================================================
+24. MATERIAL EXPLORER
+==================================================
+
+Create a simple searchable material catalog.
+
+Search by:
+- Formula
+- Material ID
+- Working Ion
+
+Filters:
+- Working Ion
+- Crystal System
+- Voltage Range
+- Stability
+- Cost Range
+
+Do not add too many filters.
+
+Support:
+
+Cards View
+Compact Table View
+
+==================================================
+25. COMPARISON LAB
+==================================================
+
+Allow comparison of 2 to 4 materials.
+
+Compare:
+
+Predicted/Target Voltage
+Capacity
+Band Gap
+Formation Energy
+Energy Above Hull
+Volume Change
+Estimated Raw-Material Cost
+Sustainability Score
+
+Show:
+
+Best Voltage Match
+Lowest Estimated Cost
+Best Sustainability Score
+
+Do NOT say one material is universally “best”.
+
+==================================================
+26. ANALYTICS PAGE
+==================================================
+
+Use the uploaded analytics-style references.
+
+Create large readable charts.
+
+Include:
+
+Dataset Overview
+
+Working Ion Distribution:
+- Li
+- Mg
+- Ca
+- Zn
+- Y
+- Al
+
+Voltage Distribution
+
+Crystal System Distribution
+
+Capacity Distribution
+
+Cost Distribution
+
+Sustainability Distribution
+
+Stability Distribution
+
+Do not place every graph above the fold.
+
+Use clean sections.
+
+==================================================
+27. MODEL ANALYTICS
+==================================================
+
+Create a separate section:
+
+Model Performance
+
+Compare:
+
+Random Forest
+SVR
+KRR
+Gradient Boosting
+Baseline
+
+Metrics:
+
+MAE
+RMSE
+R²
+
+Use only proper test-set results.
+
+Do not treat old prediction columns as final test metrics unless validated.
+
+==================================================
+28. ACTUAL VS PREDICTED GRAPH
+==================================================
+
+Create a professional scatter plot:
+
+Actual Voltage vs Predicted Voltage
+
+Include:
+- ideal diagonal line
+- predicted points
+- clean axis labels
+
+Also add:
+Residual Distribution
+
+Charts must be large and readable.
+
+==================================================
+29. TRAIN / TEST HANDLING
+==================================================
+
+Use:
+
+data_split
+cv_fold_5
+split_group_id
+split_method
+
+Separate:
+
+Training
+Testing
+
+Never train on the test set.
+
+==================================================
+30. PREVENT DATA LEAKAGE
+==================================================
+
+Do not use these columns as ML input:
+
+target_voltage
+
+existing predicted_voltage_* columns
+
+labels derived directly from target_voltage
+
+test split labels
+
+The model must learn voltage only from legitimate material descriptors.
+
+==================================================
+31. FEATURE ENGINEERING
+==================================================
+
+The user must NEVER manually enter Magpie descriptors.
+
+Flow:
+
+User Material Input
+→ Formula / Material Record
+→ Feature Engineering
+→ Elemental / Magpie Features
+→ Preprocessing
+→ Production Regression Model
+→ Voltage Prediction
+
+==================================================
+32. CONFIDENCE / UNCERTAINTY
+==================================================
+
+Do not invent confidence values.
+
+Use real methods such as:
+
+- ensemble prediction spread
+- bootstrap models
+- validation-derived error intervals
+- conformal prediction if implemented
+
+Show:
+
+Predicted Voltage
+3.42 V
+
+Prediction Interval
+3.12 – 3.72 V
+
+==================================================
+33. SIMILAR MATERIALS
+==================================================
+
+Add:
+
+Similar Materials
+
+Use feature-space nearest-neighbour search.
+
+Return 3 to 5 similar known materials.
+
+Display:
+
+Formula
+Voltage
+Working Ion
+Structure
+Similarity Score
+
+KNN can be used here.
+
+==================================================
+34. WHAT-IF ANALYSIS
+==================================================
+
+Allow users to modify supported parameters and rerun the prediction.
+
+Examples:
+
+Working Ion
+Concentration
+Crystal-related values where scientifically valid
+
+Show:
+
+Original
+vs
+Modified
+
+Do not allow obviously impossible inputs without warnings.
+
+==================================================
+35. HISTORY
+==================================================
+
+Save every prediction or discovery run.
+
+Store:
+
+Timestamp
+Input Parameters
+Material
+Model Version
+Prediction
+Cost
+Sustainability
+Results
+
+History actions:
+
+Open
+Re-run
+Compare
+Delete
+
+==================================================
+36. SAVED MATERIALS
+==================================================
+
+Allow users to bookmark candidate materials.
+
+Store:
+
+Formula
+Main Metrics
+Date Saved
+Optional User Note
+
+==================================================
+37. REPORTS
+==================================================
+
+Generate professional material reports.
+
+Include:
+
+Material Summary
+Predicted Voltage
+Prediction Uncertainty
+Structural Information
+Capacity
+Stability
+Estimated Cost
+Sustainability
+Model Information
+Source / Provenance
+
+Exports:
+
+PDF
+CSV
+
+Do not create fake citations.
+
+==================================================
+38. PROVENANCE
+==================================================
+
+Use:
+source_provenance
+
+Show on Material Details:
+
+Data Source
+Origin
+Materials Project ID if available
+Reference information
+
+==================================================
+39. MAIN DATASET
+==================================================
+
+File:
+crystalforge_dataset_enriched.csv
+
+Use it for:
+
+- Material Records
+- Voltage Target
+- Battery Properties
+- ML Features
+- Structure Metadata
+- Train/Test Split
+- Model Information
+- Material Properties
+
+==================================================
+40. REFERENCE DATASET
+==================================================
+
+File:
+crystalforge_element_reference.csv
+
+Use it for:
+
+- Element Price
+- Atomic Weight
+- Element Abundance
+- Criticality
+- Sustainability Support
+- Reference Sources
+
+Do NOT use this file as another voltage training dataset.
+
+==================================================
+41. FRONTEND FOLDER STRUCTURE
+==================================================
+
+frontend/
+└── src/
+    ├── pages/
+    │   ├── Home.tsx
+    │   ├── Predict.tsx
+    │   ├── Discovery.tsx
+    │   ├── Materials.tsx
+    │   ├── MaterialDetails.tsx
+    │   ├── Compare.tsx
+    │   ├── Analytics.tsx
+    │   ├── History.tsx
+    │   └── Reports.tsx
+    │
+    ├── components/
+    │   ├── Navbar.tsx
+    │   ├── Hero.tsx
+    │   ├── MetricCard.tsx
+    │   ├── MaterialCard.tsx
+    │   ├── PredictionChart.tsx
+    │   ├── CrystalViewer.tsx
+    │   ├── CostBreakdown.tsx
+    │   ├── SustainabilityCard.tsx
+    │   └── ModelMetrics.tsx
+    │
+    ├── services/
+    │   └── api.ts
+    │
+    ├── hooks/
+    ├── utils/
+    ├── types/
+    └── styles/
+
+==================================================
+42. BACKEND FOLDER STRUCTURE
+==================================================
+
+backend/
+│
+├── main.py
+├── config.py
+│
+├── api/
+│   ├── prediction.py
+│   ├── discovery.py
+│   ├── materials.py
+│   ├── analytics.py
+│   ├── comparison.py
+│   ├── history.py
+│   └── reports.py
+│
+├── services/
+│   ├── prediction_service.py
+│   ├── material_service.py
+│   ├── discovery_service.py
+│   ├── cost_service.py
+│   ├── sustainability_service.py
+│   ├── structure_service.py
+│   ├── comparison_service.py
+│   └── report_service.py
+│
+├── database/
+│   ├── db.py
+│   ├── models.py
+│   └── schemas.py
+│
+└── tests/
+
+==================================================
+43. ML FOLDER STRUCTURE
+==================================================
+
+ml/
+│
+├── train.py
+├── evaluate.py
+├── predict.py
+├── preprocess.py
+├── feature_builder.py
+├── split.py
+├── uncertainty.py
+│
+├── models/
+│   ├── random_forest.py
+│   ├── svr.py
+│   ├── krr.py
+│   └── boosting.py
+│
+├── artifacts/
+│   ├── model.joblib
+│   ├── preprocessor.joblib
+│   └── model_metadata.json
+│
+└── reports/
+    └── evaluation.json
+
+Training and real-time web inference must be separated.
+
+==================================================
+44. API ENDPOINTS
+==================================================
+
+Implement real endpoints:
+
+GET /api/health
+
+POST /api/predict
+
+POST /api/discover
+
+GET /api/materials
+
+GET /api/materials/{id}
+
+GET /api/materials/{id}/similar
+
+GET /api/materials/{id}/structure
+
+POST /api/compare
+
+GET /api/analytics
+
+GET /api/model/metrics
+
+GET /api/history
+
+POST /api/history
+
+DELETE /api/history/{id}
+
+GET /api/saved
+
+POST /api/saved
+
+DELETE /api/saved/{id}
+
+POST /api/reports
+
+==================================================
+45. PERFORMANCE
+==================================================
+
+Do NOT send the entire 6,000+ row CSV to the frontend.
+
+Backend must handle:
+
+Pagination
+Filtering
+Sorting
+Predictions
+Cost Calculation
+Sustainability Calculation
+Ranking
+
+Frontend should receive only necessary data.
+
+==================================================
+46. ERROR HANDLING
+==================================================
+
+Handle:
+
+Invalid formulas
+Unsupported working ions
+Missing materials
+Missing CIF
+Missing price information
+Missing properties
+Model loading failures
+API failures
+
+Show human-readable error messages.
+
+Never silently create random values.
+
+==================================================
+47. RESPONSIVE DESIGN
+==================================================
+
+The application must work on:
+
+Desktop
+Laptop
+Tablet
+Mobile
+
+On smaller screens:
+
+Stack cards vertically
+Simplify charts
+Use collapsible navigation
+Avoid horizontal overflow
+
+==================================================
+48. ACCESSIBILITY
+==================================================
+
+Include:
+
+Keyboard Navigation
+Readable Contrast
+Semantic Labels
+Accessible Forms
+Validation Messages
+Tooltips
+Focus States
+
+==================================================
+49. FINAL PRODUCT RULE
+==================================================
+
+The application must clearly separate:
+
+MODEL PREDICTIONS
+from
+DATASET VALUES
+from
+CALCULATED VALUES
+from
+EXTERNAL DATA
+
+Never make random scientific claims.
+
+==================================================
+50. FINAL USER FLOW
+==================================================
+
+Home
+↓
+Predict Material OR Discovery Studio
+↓
+Enter Simple Requirements
+↓
+Backend Builds Features
+↓
+ML Predicts Voltage
+↓
+Cost Engine Calculates Raw-Material Cost
+↓
+Sustainability Engine Calculates Screening Score
+↓
+Ranking Engine Ranks Candidates
+↓
+Results
+↓
+Material Details
+↓
+Real 3D Crystal Viewer
+↓
+Compare / Save / Report
+
+==================================================
+51. FINAL QUALITY EXPECTATION
+==================================================
+
+The finished application should look like a polished scientific SaaS product suitable for:
+
+Professors
+Researchers
+Battery Scientists
+Materials Scientists
+R&D Teams
+University Evaluators
+Industry Engineers
+
+The website should be:
+
+Clean
+Spacious
+Technically Correct
+Data Driven
+Responsive
+Professional
+Visually Premium
+Easy to Understand
+Fully Functional
+
+Do not prioritize adding more features over clarity.
+
+Highest priority:
+
+Correct Data
+→ Correct ML
+→ Clear Results
+→ Strong UX
+→ Beautiful Presentation
+
+MOST IMPORTANT FINAL DESIGN RULE:
+
+DO NOT MAKE THE WEBSITE CONGESTED.
+
+Use the uploaded reference images as the main design benchmark.
+
+Keep forms simple.
+
+Keep output cards limited.
+
+Use whitespace.
+
+Remove the Allowed Elements and Excluded Elements tables completely.
+
+Do not show fake predicted images.
+
+Use real crystal data only.
+
+Everything must work end-to-end.
