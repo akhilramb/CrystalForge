@@ -12,16 +12,16 @@
 /* Theme tokens are separate from layout and motion. Light is the default. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #e7eff6;
-  --muted: #a6b8c9;
-  --olive: #79cbd0;
-  --lime: #83cbd0;
-  --line: #34495c;
-  --surface: #162534;
-  --surface-raised: #203345;
-  --motion-accent: #79d3db;
+  --ink: #edf0e8;
+  --muted: #acb3a5;
+  --olive: #b9cc8a;
+  --lime: #c5d69a;
+  --line: #3b4138;
+  --surface: #1c1f1c;
+  --surface-raised: #282d27;
+  --motion-accent: #abc18a;
   color: var(--ink);
-  background: #0e1926;
+  background: #141614;
 }
 [data-theme="dark"] :is(
   .navbar, .nav-links, footer, .dropdown, .panel, .metric, .material-card,
@@ -48,13 +48,13 @@
   .metric > span, .metric em, .account-nav a, .auth-subtitle, .auth-foot,
   .auth-options, .auth-switch, .auth-form > label, .auth-form-wrap h1
 ) { color: var(--muted); }
-[data-theme="dark"] :is(.dark-band, .voltage-result, .toast) { background: #1a2e40; }
+[data-theme="dark"] :is(.dark-band, .voltage-result, .toast) { background: #252b23; }
 [data-theme="dark"] :is(.button:not(.outline), .auth-submit) {
   background: var(--lime);
   border-color: var(--lime);
-  color: #102331;
+  color: #20271a;
 }
-[data-theme="dark"] :is(.button:not(.outline), .auth-submit):hover { background: #a4e3e5; }
+[data-theme="dark"] :is(.button:not(.outline), .auth-submit):hover { background: #d9e6ba; }
 [data-theme="dark"] :is(
   input:not([type="range"]):not([type="checkbox"]), select, textarea,
   .auth-input, .auth-social button
@@ -82,7 +82,7 @@
 [data-theme="dark"] .recharts-cartesian-grid line { stroke: var(--line); }
 [data-theme="dark"] .recharts-reference-line line { stroke: var(--muted); }
 
-[data-theme="dark"] .hero { background: #172a3a; }
+[data-theme="dark"] .hero { background: #1c211c; }
 [data-theme="dark"] .nav-links a.active,
 [data-theme="dark"] .auth-form-wrap h1 { color: var(--ink); }
 [data-theme="dark"] .auth-check { color: var(--muted) !important; }

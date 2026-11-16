@@ -53,6 +53,7 @@ const Account = lazy(() => import("./pages/Account"));
 import { ThemeToggle } from "./components/ThemeToggle";
 import "./styles/index.css";
 import "./styles/theme.css";
+import "./styles/auth.css";
 import "./styles/motion.css";
 function App() {
   const auth = useAuth();

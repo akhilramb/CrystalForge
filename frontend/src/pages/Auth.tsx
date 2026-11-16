@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
   Atom,
+  Hexagon,
   Eye,
   EyeOff,
   Github,
@@ -25,10 +26,10 @@ function AuthFrame({
       <section className="auth-panel">
         <Link className="auth-brand" to="/">
           <span className="auth-brand-icon">
-            <Atom size={21} />
+            <Hexagon size={25} />
           </span>
           <span>
-            CrystalForge <small>AI</small>
+            Crystal<span className="brand-light">Forge</span> <small>AI</small>
           </span>
         </Link>
         <div className="auth-form-wrap">
@@ -429,6 +430,7 @@ export function Register() {
             </button>
           </span>
         </label>
+        <p className="auth-password-help">Use 12 or more characters, including uppercase, lowercase, a number, and a symbol.</p>
         <label>
           Confirm password
           <span className="auth-input">
@@ -505,6 +507,7 @@ export function ForgotPassword() {
           : "Enter the email address associated with your account."
       }
     >
+      {configError && <AuthMessage error>{configError}</AuthMessage>}
       {sent ? (
         <>
           <AuthMessage>
