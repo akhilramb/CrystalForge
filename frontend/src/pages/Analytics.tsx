@@ -1,8 +1,20 @@
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { Heading, useData, State, Metric } from "../components/UI";
 import { Distribution, Predictions } from "../components/Charts";
 import { fmt } from "../services/api";
 export function ModelInfo() {
   const { data: m, error, loading } = useData("/model/metrics");
+  const { data: grouped, error: groupedError, loading: groupedLoading } =
+    useData("/model/framework-disjoint");
+  const benchmarkHeading = useRef<HTMLHeadingElement>(null);
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash === "#framework-benchmark" && grouped) {
+      benchmarkHeading.current?.scrollIntoView();
+    }
+  }, [hash, grouped]);
+
   return (
     <div className="container">
       <Heading
@@ -66,6 +78,49 @@ export function ModelInfo() {
                 </tbody>
               </table>
             </div>
+          </section>
+          <section className="panel">
+            <h2 id="framework-benchmark" ref={benchmarkHeading}>Unseen framework benchmark</h2>
+            <p>
+              This separate, single-seed benchmark holds out entire framework
+              formulas before fitting. It does not select the deployed model.
+            </p>
+            <State loading={groupedLoading} error={groupedError} />
+            {grouped && (
+              <>
+                <p className="muted">
+                  {grouped.dataset_rows} records · {grouped.train_framework_groups} training
+                  frameworks · {grouped.test_framework_groups} held-out frameworks ·
+                  {grouped.framework_overlap} framework overlaps
+                </p>
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Model</th>
+                        <th>Held-out MAE (V)</th>
+                        <th>Held-out RMSE (V)</th>
+                        <th>R²</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grouped.models.map((row: any) => (
+                        <tr key={row.name}>
+                          <td>{row.name}</td>
+                          <td>{fmt(row.test.mae_volts, 3)}</td>
+                          <td>{fmt(row.test.rmse_volts, 3)}</td>
+                          <td>{fmt(row.test.r2, 3)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="muted">
+                  One random split is exploratory and sensitive to the chosen
+                  seed. Framework formula is a coarse chemical grouping.
+                </p>
+              </>
+            )}
           </section>
           <Predictions points={m.test_points} />
           <Distribution

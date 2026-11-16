@@ -1,6 +1,6 @@
 # CrystalForge
 
-A local, full-stack battery-material screening application built with React, TypeScript, Vite and FastAPI. It includes a trained voltage model, the supplied 6,185-record dataset, reference-based elemental economics, discovery ranking, comparison, SQLite history and bookmarks, and PDF/CSV reports.
+A full-stack battery-material screening application built with React, TypeScript, Vite and FastAPI. It includes a trained voltage model, the supplied 6,185-record dataset, reference-based elemental economics, discovery ranking, comparison, a Materials Project crystal workspace, and optional Supabase accounts for private research history and saved materials.
 
 ## Run on Windows (PowerShell)
 
@@ -45,9 +45,10 @@ Open the Vite URL printed in the terminal. Vite proxies `/api` to port 8000. To 
 - **Material profile:** electrochemistry, source metadata, real-CIF viewer or honest unavailable state, economics, similar materials.
 - **Comparison:** 2–4 catalog candidates; voltage chart, property table and criterion-specific highlights.
 - **Analytics / Model Information:** dataset distributions, five evaluated regressors, test scatterplot, residual distribution, uncertainty and split disclosure.
-- **History:** automatic persistence, open, rerun, compare catalog predictions and delete.
-- **Saved materials:** persistent bookmarks and editable research notes.
-- **Reports:** PDF and CSV downloads for catalog profiles and saved predictions.
+- **History:** account-owned prediction and discovery runs, open, rerun, compare catalog predictions and delete (requires sign in).
+- **Saved materials:** account-owned bookmarks and research notes (requires sign in).
+- **Reports:** PDF and CSV downloads for catalog profiles and saved predictions (requires sign in; downloaded reports are not stored as files on the server).
+- **Accounts:** email/password signup and sign-in, email verification, password reset, Google/GitHub OAuth, profile, preferences, login history and account deletion.
 
 ## Scientific interpretation
 
@@ -64,13 +65,13 @@ python -m ml.train
 python -m pytest tests -q
 ```
 
-Training recomputes consistent elemental composition descriptors; it does **not** ingest historical prediction columns, target-derived labels, split labels, cost or sustainability as input features. The supplied Magpie features are not mixed with a different live featurizer. The exact feature names are recorded in model metadata.
+Training recomputes consistent elemental composition descriptors; it does **not** ingest historical prediction columns, target-derived labels, split labels, cost or sustainability as input features. The supplied Magpie features are not mixed with a different live featurizer. The exact feature names are recorded in model metadata. Run `python -m ml.evaluate_framework_disjoint` to regenerate the separate grouped benchmark. This evaluates all supplied rows using one deterministic 80/20 framework-group split and does not change the deployed model.
 
 The supplied battery-group split and fold IDs are used and checked for group crossing. Training folds 1–3 fit five candidates; fold 0 selects by validation MAE. Each model is refit on folds 0–3 for final evaluation. Fold 4 calibrates split-conformal absolute residual intervals; test data is not used in training, selection or calibration. No claim of hyperparameter-optimal models is made.
 
 **Selected:** Gradient Boosting. **Test MAE:** 0.530 V. **RMSE:** 0.897 V. **R²:** 0.664. **90% marginal interval radius:** approximately 0.993 V. Bundled metrics: `models/model_metadata.json`.
 
-**Important limitation:** 433 framework formulas appear across the supplied train/test partitions. These scores describe the supplied battery-group holdout, not a chemically disjoint benchmark or proven performance on new chemical families. Intervals assume sufficiently exchangeable data and are not guarantees for individual compounds or underrepresented ions. The supplied source provenance has not been independently verified. Existing target values are not presented as experimentally verified measurements.
+**Important limitation:** 433 framework formulas appear across the supplied train/test partitions. Those scores describe the supplied battery-group holdout, not performance on new chemical families. A separate, single-seed grouped framework benchmark is reported on the Model Information page and in `reports/framework_disjoint_evaluation.json`. It is exploratory, remains sensitive to its split seed, and does not establish generalization to all unseen chemistries. Intervals assume sufficiently exchangeable data and are not guarantees for individual compounds or underrepresented ions. The supplied source provenance has not been independently verified. Existing target values are not presented as experimentally verified measurements.
 
 ### Cost and sustainability
 
@@ -102,16 +103,18 @@ do not establish experimental verification or electrode suitability.
 
 Set `CRYSTALFORGE_STRUCTURE_CACHE` to a writable directory to override the
 default `data/structure-cache`. On Render Free, the filesystem is temporary,
-so SQLite records and cached CIFs may be lost when the service restarts or
-spins down. Cached structures are snapshots. Remove the relevant cached CIF
-to request a fresh copy.
+so legacy SQLite records and cached CIFs may be lost when the service restarts
+or spins down. Supabase-backed user records are stored separately and persist
+according to your Supabase project plan. Cached structures are snapshots.
+Remove the relevant cached CIF to request a fresh copy.
 
 ## Project layout
 
 ```text
 frontend/src/      React routes, components, API client, responsive styles
 backend/           FastAPI routes, data validation and static build serving
-backend/services/  Catalog, economics, discovery, SQLite persistence, exports
+backend/services/  Catalog, auth token verification, economics, discovery, exports
+supabase/          Auth-owned tables, grants and Row Level Security migration
 ml/                Shared feature builder and offline training/evaluation
 models/            Trusted trained model, transformed catalog, metadata
 reports/           Reproducible evaluation results
@@ -120,7 +123,7 @@ tests/             API workflows, scientific validation, economics and leakage c
 docs/              Supplied product specification
 ```
 
-`data/application.db` is created on use and ignored by Git. Set `CRYSTALFORGE_DB` to use a separate database. History currently displays the latest 200 runs; older rows remain stored. Notes and history are isolated by an anonymous browser-session cookie. This is not an account login system; clearing cookies loses access to that session. Keep the default loopback host for local use. A public deployment needs an authentication and hosting configuration appropriate for its users.
+`data/application.db` is created on use and ignored by Git. Set `CRYSTALFORGE_DB` to use a separate database. Current signed-in history and saved materials are stored in Supabase Postgres. The previous SQLite anonymous-session records are not automatically assigned to a new account; there is no reliable way to prove which user owned an old browser-only session. Keep the default loopback host for local use.
 
 Model artifacts are pickle-based trusted local assets: never replace them with untrusted downloaded joblib files. Use the pinned Python dependencies or retrain in your environment. Dataset changes require `python -m ml.train` to regenerate the model and catalog caches together. Dataset licensing and provenance follow the supplied source; no independent laboratory certification is implied.
 
@@ -134,7 +137,7 @@ npx.cmd playwright install chromium
 npm.cmd run test:e2e
 ```
 
-Stop any existing server on port 8000 first. The browser-test runner starts its own backend. Browser tests start the built application and check prediction, discovery, comparison, reports, mobile layouts and the structure workspace’s unavailable and retry states. Live authenticated Materials Project retrieval must be checked with a configured server key.
+Stop any existing server on port 8000 first. The browser-test runner starts its own backend. Browser tests start the built application and check prediction, discovery, comparison, login rendering, protected-route redirects, mobile layouts and structure workspace unavailable/retry states. Live Supabase sign-in and authenticated structure retrieval must be checked after configuring those external services.
 
 ## Deploy the full website on Render
 
@@ -146,8 +149,69 @@ dashboard. Render builds and deploys when you push a new commit to that branch.
 
 Free web services spin down after 15 minutes without incoming traffic and can
 take about a minute to wake on the next request. The Free plan does not offer
-always-on instances. Free service files are temporary, so SQLite history,
-saved notes and downloaded CIF cache files may be lost after restart, spin-down
-or redeploy. The deployed code uses the existing anonymous browser-session
-model; Render's hostname also starts a different browser session from any
-earlier host.
+always-on instances. Free service files are temporary, so legacy anonymous
+records and downloaded CIF cache files may be lost after restart, spin-down or
+redeploy. Supabase-backed user records persist in your Supabase project
+independently of Render's temporary filesystem.
+
+## Supabase account setup
+
+1. Create or select a Supabase project. In **Project Settings → API**, copy the
+   project URL and the **publishable** key. Never put a secret/service-role key
+   in frontend code or a `VITE_` variable.
+2. In the Supabase SQL Editor, run
+   `supabase/migrations/202611160001_auth_and_user_data.sql`. It creates the
+   profile, login-history, preference, saved-material, prediction-history and
+   activity tables with Row Level Security policies tied to `auth.uid()`.
+3. In **Authentication → URL Configuration**, set the site URL to
+   `https://crystalforge.onrender.com` and add redirect URLs for
+   `https://crystalforge.onrender.com/auth/callback`,
+   `https://crystalforge.onrender.com/reset-password`,
+   `https://crystalforge.onrender.com/verify-email`, plus equivalent local
+   URLs at `http://localhost:8000` while developing.
+4. In **Authentication → Providers**, enable email and configure Google and/or
+   GitHub credentials. OAuth buttons call Supabase and remain disabled while
+   Supabase is unconfigured.
+5. In the Render `crystalforge` service **Environment** settings, add
+   `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. Account deletion additionally
+   requires `SUPABASE_SERVICE_ROLE_KEY`, used only by the backend admin delete
+   endpoint. Add secrets directly in Render; never commit or share them. Save
+   and wait for the redeploy.
+
+Locally, set the same variables in the terminal that starts FastAPI. In
+PowerShell:
+
+```powershell
+$env:SUPABASE_URL = "https://YOUR_PROJECT.supabase.co"
+$env:SUPABASE_PUBLISHABLE_KEY = "YOUR_PUBLISHABLE_KEY"
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Only set `SUPABASE_SERVICE_ROLE_KEY` locally if you need to test account
+deletion. The backend verifies signed access tokens against Supabase JWKS for
+asymmetric JWT projects and uses Supabase Auth's user endpoint for legacy
+shared-secret JWTs. User-specific REST requests use the caller's token, so
+Supabase RLS remains the authorization boundary. Public catalog and prediction
+routes remain available without an account; anonymous predictions are not
+saved. Private endpoints return HTTP 401 when signed out.
+
+The account preferences page stores theme and crystal-length units. Login
+history contains successful sign-ins and sign-outs only; failed password
+attempts remain managed by Supabase Auth. Account deletion requires typing
+`DELETE`; Auth deletion cascades to the profile and owned records. Reports are
+downloaded to the user's device and only the report-creation activity record is
+retained. Email delivery and OAuth availability depend on Supabase project and
+provider settings. Configure SMTP for dependable production email delivery.
+
+### Verify Supabase bookmark ownership
+
+Use a separate Supabase test project with the migration applied and two
+disposable signed-in users. Keep the following environment variables in your
+local test shell: `CF_RLS_TEST_URL`, `CF_RLS_TEST_PUBLISHABLE_KEY`,
+`CF_RLS_TEST_OWNER_TOKEN`, and `CF_RLS_TEST_OTHER_TOKEN`. Supply short-lived
+user access tokens and keep them out of Git and shared logs.
+
+Run `python -m pytest -q tests/test_supabase_rls_live.py`. The test saves a real
+catalog material through FastAPI, verifies that the second user cannot read,
+update, or delete the row through Supabase, verifies API isolation, and cleans
+up the test bookmark. It skips when the test configuration is absent.

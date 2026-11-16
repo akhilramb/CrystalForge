@@ -28,15 +28,15 @@ def test_prediction_is_real_and_uncertainty_is_calibrated():
     assert np.isfinite(d["predicted_voltage"])
     assert d["interval"][0] < d["predicted_voltage"] < d["interval"][1]
     assert len(d["similar"]) == 5
-    saved = client.get("/api/history/" + str(d["history_id"])).json()
-    assert saved["result"]["predicted_voltage"] == d["predicted_voltage"]
-    rerun = client.post("/api/history/" + str(d["history_id"]) + "/rerun").json()
-    assert rerun["predicted_voltage"] == d["predicted_voltage"]
+    assert d["history_id"] is None  # Anonymous predictions are never persisted.
+    assert client.get("/api/history").status_code == 401
+    assert client.get("/api/history/1").status_code == 401
+    assert client.post("/api/history/1/rerun").status_code == 401
     for fmt, magic in [("pdf", b"%PDF"), ("csv", b"Property")]:
         r = client.post(
-            "/api/reports", json={"history_id": d["history_id"], "format": fmt}
+            "/api/reports", json={"material_id": "cf-00001", "format": fmt}
         )
-        assert r.status_code == 200 and r.content.startswith(magic)
+        assert r.status_code == 401
 
 
 def test_scientific_validation():
@@ -91,19 +91,13 @@ def test_saved_compare_structure_and_delete(monkeypatch, tmp_path):
     monkeypatch.delenv("MP_API_KEY", raising=False)
     monkeypatch.setenv("CRYSTALFORGE_STRUCTURE_CACHE", str(tmp_path))
     id = "cf-00001"
-    assert (
-        client.post(
-            "/api/saved", json={"material_id": id, "note": "Check source"}
-        ).status_code
-        == 200
-    )
-    assert client.get("/api/saved").json()[0]["note"] == "Check source"
+    assert client.post("/api/saved", json={"material_id": id, "note": "Check source"}).status_code == 401
+    assert client.get("/api/saved").status_code == 401
     assert len(client.post("/api/compare", json={"ids": [id, "cf-00002"]}).json()) == 2
     assert (
         client.get("/api/materials/" + id + "/structure").json()["available"] is False
     )
-    assert client.delete("/api/saved/" + id).status_code == 200
-    assert client.get("/api/saved").json() == []
+    assert client.delete("/api/saved/" + id).status_code == 401
 
 
 def test_no_target_features_or_split_overlap():
@@ -127,17 +121,25 @@ def test_analytics_and_api_404():
     assert client.get("/api/unknown-endpoint").status_code == 404
 
 
-def test_browser_sessions_cannot_read_or_delete_other_history():
+def test_anonymous_users_cannot_read_or_write_private_records():
     a = TestClient(app)
     b = TestClient(app)
     row = a.post(
         "/api/predict", json={"formula": "LiFePO4", "working_ion": "Li"}
     ).json()
-    assert b.get("/api/history/" + str(row["history_id"])).status_code == 404
-    b.delete("/api/history/" + str(row["history_id"]))
-    assert a.get("/api/history/" + str(row["history_id"])).status_code == 200
-    a.post("/api/saved", json={"material_id": "cf-00002", "note": "Private note"})
-    assert b.get("/api/saved").json() == []
+    assert row["history_id"] is None
+    assert b.get("/api/history").status_code == 401
+    assert b.delete("/api/history/1").status_code == 401
+    assert a.post("/api/saved", json={"material_id": "cf-00002", "note": "Private note"}).status_code == 401
+    assert b.get("/api/saved").status_code == 401
+
+
+def test_auth_config_is_safe_when_missing(monkeypatch):
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_PUBLISHABLE_KEY", raising=False)
+    response = client.get("/api/auth/config")
+    assert response.status_code == 200
+    assert response.json() == {"configured": False, "supabase_url": "", "publishable_key": ""}
 
 
 def test_cloud_run_readiness(monkeypatch):
@@ -146,3 +148,49 @@ def test_cloud_run_readiness(monkeypatch):
     response = client.get("/api/ready")
     assert response.status_code == 503
     assert response.json() == {"detail": "Model unavailable."}
+
+
+def test_framework_disjoint_benchmark_endpoint():
+    response = client.get("/api/model/framework-disjoint")
+    assert response.status_code == 200
+    metrics = response.json()
+    assert metrics["framework_overlap"] == 0
+    assert metrics["test_framework_groups"] > 0
+    assert {model["name"] for model in metrics["models"]} == {
+        "Baseline",
+        "Random Forest",
+        "SVR",
+        "Kernel Ridge",
+        "Gradient Boosting",
+    }
+
+
+def test_sqlite_legacy_migration_preserves_rows(monkeypatch, tmp_path):
+    import sqlite3
+    from backend.services import storage
+
+    path = tmp_path / "legacy.db"
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "CREATE TABLE history (id INTEGER PRIMARY KEY, created TEXT, kind TEXT, inputs TEXT, result TEXT)"
+        )
+        connection.execute(
+            "INSERT INTO history VALUES (1, '2025-01-01', 'prediction', '{}', '{}')"
+        )
+        connection.execute(
+            "CREATE TABLE saved (material_id TEXT PRIMARY KEY, created TEXT, note TEXT)"
+        )
+        connection.execute(
+            "INSERT INTO saved VALUES ('cf-00001', '2025-01-01', 'legacy note')"
+        )
+
+    monkeypatch.setattr(storage, "DB_PATH", path)
+    with storage.connect() as connection:
+        history = connection.execute(
+            "SELECT session FROM history WHERE id=1"
+        ).fetchone()
+        saved = connection.execute(
+            "SELECT material_id, note, session FROM saved"
+        ).fetchone()
+        assert history["session"] == "local"
+        assert tuple(saved) == ("cf-00001", "legacy note", "local")

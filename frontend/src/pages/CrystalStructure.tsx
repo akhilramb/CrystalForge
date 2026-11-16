@@ -2,35 +2,19 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Heading, State } from "../components/UI";
 import { api, fmt } from "../services/api";
-import type { CrystalGeometry } from "../components/CrystalViewer";
+import "./crystal-lab.css";
+import type { StructureResponse } from "../services/contracts";
 
 const Viewer = lazy(() => import("../components/CrystalViewer"));
-
-type StructureResponse =
-  | { available: false; message: string; source_url?: string }
-  | (CrystalGeometry & {
-      available: true;
-      material_id: string;
-      formula: string;
-      lengths: number[];
-      angles: number[];
-      volume: number;
-      symmetry: {
-        crystal_system: string;
-        space_group: string;
-        space_group_number: number;
-      } | null;
-      source_url: string;
-      provenance: { source: string; method: "local_cif" | "cache" | "api"; retrieved_at: string | null };
-    });
 
 function Workspace({ id }: { id: string }) {
   const [data, setData] = useState<StructureResponse>();
   const [error, setError] = useState("");
+  const [selectedSite, setSelectedSite] = useState<number | null>(null);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
-    api("/materials/" + encodeURIComponent(id) + "/structure", undefined, "GET", controller.signal)
+    api<StructureResponse>("/materials/" + encodeURIComponent(id) + "/structure", undefined, "GET", controller.signal)
       .then(setData)
       .catch((error: Error) => {
         if (!controller.signal.aborted) setError(error.message);
@@ -40,14 +24,19 @@ function Workspace({ id }: { id: string }) {
 
   function retry() {
     setData(undefined);
+    setSelectedSite(null);
     setError("");
     setAttempt((value) => value + 1);
   }
 
+  const site = data?.available && selectedSite !== null
+    ? data.sites[selectedSite]
+    : undefined;
+
   return (
-    <div className="container">
+    <div className="container crystal-lab">
       <Link className="breadcrumb" to={"/materials/" + encodeURIComponent(id)}>Material details / {id}</Link>
-      <Heading eyebrow={id} title="Crystal structure workspace">
+      <Heading eyebrow={id + " / CRYSTAL STRUCTURE WORKSPACE"} title="Crystal Lab">
         {data?.available ? data.formula + " · " + data.material_id : "Atomic coordinates for the catalog structure"}
       </Heading>
       <State loading={!data && !error} error={error} />
@@ -60,14 +49,30 @@ function Workspace({ id }: { id: string }) {
       )}
       {data?.available && (
         <div className="crystal-workspace">
-          <section className="panel">
-            <h2>Unit cell</h2>
+          <section className="panel lab-stage" aria-label="Unit cell viewer">
             <Suspense fallback={<State loading />}>
-              <Viewer structure={data} />
+              <Viewer structure={data} lab selectedSite={selectedSite} onSelectSite={setSelectedSite} />
             </Suspense>
           </section>
-          <aside className="panel">
-            <h2>Structure information</h2>
+          <aside className="panel lab-inspector">
+            <h2>Structure inspector</h2>
+            <section>
+              <h3>Atomic sites</h3>
+              <label htmlFor="lab-site">Click an atom in the viewer or choose a site</label>
+              <select id="lab-site" value={selectedSite ?? ""} onChange={(event) =>
+                setSelectedSite(event.target.value === "" ? null : Number(event.target.value))
+              }>
+                <option value="">No site selected</option>
+                {data.sites.map((atom, index) => (
+                  <option key={index} value={index}>{index + 1} · {atom.element}</option>
+                ))}
+              </select>
+              {site && <p role="status">
+                {site.element} · Cartesian x / y / z (Å)<br />
+                <strong>{site.position.map((coordinate) => fmt(coordinate, 3)).join(" / ")}</strong>
+              </p>}
+            </section>
+            <h3>Lattice and symmetry</h3>
             <dl>
               <dt>Formula</dt><dd>{data.formula}</dd>
               <dt>Materials Project mapping</dt><dd>{data.material_id}</dd>
@@ -77,6 +82,9 @@ function Workspace({ id }: { id: string }) {
               <dt>α, β, γ (°)</dt><dd>{data.angles.map((n) => fmt(n)).join(" / ")}</dd>
               <dt>Volume (Å³)</dt><dd>{fmt(data.volume)}</dd>
               <dt>Sites</dt><dd>{data.sites.length}</dd>
+            </dl>
+            <h3>Provenance</h3>
+            <dl>
               <dt>Source</dt><dd>{data.provenance.source}</dd>
               <dt>Delivery</dt><dd>{{ local_cif: "Supplied CIF", cache: "Cached Materials Project CIF", api: "Materials Project API" }[data.provenance.method]}</dd>
               <dt>Retrieved at (UTC)</dt><dd><time dateTime={data.provenance.retrieved_at ?? undefined}>{data.provenance.retrieved_at ?? "Unavailable"}</time></dd>

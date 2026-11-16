@@ -1,11 +1,19 @@
 import { Link } from "react-router-dom";
 import { Zap, Orbit, Leaf, Box } from "lucide-react";
 import { useData } from "../components/UI";
+import { HeroAtmosphere } from "../components/HeroAtmosphere";
+import { AnimatedNumber } from "../components/AnimatedNumber";
+import { useInView } from "../hooks/useInView";
+
 export default function Home() {
   const { data } = useData("/analytics");
+  const features = useInView<HTMLElement>();
+  const dataset = useInView<HTMLElement>();
+  const note = useInView<HTMLElement>();
   return (
     <>
       <section className="hero">
+        <HeroAtmosphere />
         <div className="hero-inner">
           <span className="pill">
             <span className="tiny-square" />
@@ -37,7 +45,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <section className="home-section">
+      <section className="home-section" ref={features.ref} data-reveal={features.visible}>
         <div className="section-head">
           <span className="eyebrow">FROM POSSIBILITIES TO EVIDENCE</span>
           <h2>
@@ -93,7 +101,7 @@ export default function Home() {
           ))}
         </div>
       </section>
-      <section className="dark-band">
+      <section className="dark-band" ref={dataset.ref} data-reveal={dataset.visible}>
         <div>
           <span className="eyebrow">A DATASET. MANY POSSIBILITIES.</span>
           <h2>
@@ -111,7 +119,7 @@ export default function Home() {
         </div>
         <div className="data-numbers">
           <div>
-            <strong>{data ? data.total.toLocaleString() : "—"}</strong>
+            <strong>{data ? <AnimatedNumber value={data.total} digits={0} /> : "—"}</strong>
             <span>material records</span>
           </div>
           <div>
@@ -125,7 +133,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <section className="home-section end-note">
+      <section className="home-section end-note" ref={note.ref} data-reveal={note.visible}>
         <span className="eyebrow">SCIENTIFIC CLARITY, BY DESIGN</span>
         <h2>
           Predicted. Retrieved. Calculated.

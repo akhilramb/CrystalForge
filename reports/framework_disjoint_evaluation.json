@@ -1,0 +1,65 @@
+{
+  "protocol": "Single seeded 80/20 GroupShuffleSplit by framework_formula. Every framework formula is held out as a group. Models use the same feature builder and estimator settings as ml.train. This is an exploratory benchmark, not a repeated nested validation.",
+  "seed": 42,
+  "dataset_rows": 6185,
+  "framework_groups": 2619,
+  "train_rows": 5083,
+  "test_rows": 1102,
+  "train_framework_groups": 2095,
+  "test_framework_groups": 524,
+  "framework_overlap": 0,
+  "target_summary_volts": {
+    "minimum": 0.001328081428571,
+    "median": 2.976639940833334,
+    "maximum": 33.06577115833334
+  },
+  "models": [
+    {
+      "name": "Baseline",
+      "test": {
+        "mae_volts": 1.2403232347829158,
+        "rmse_volts": 1.6190262795912496,
+        "r2": -0.0034402385491878462
+      }
+    },
+    {
+      "name": "Random Forest",
+      "test": {
+        "mae_volts": 0.596149737746193,
+        "rmse_volts": 1.0352177829843947,
+        "r2": 0.5897513471682991
+      }
+    },
+    {
+      "name": "SVR",
+      "test": {
+        "mae_volts": 0.5944751179217751,
+        "rmse_volts": 1.0674343166723845,
+        "r2": 0.5638197092822346
+      }
+    },
+    {
+      "name": "Kernel Ridge",
+      "test": {
+        "mae_volts": 0.6553102083808794,
+        "rmse_volts": 1.106423820581036,
+        "r2": 0.5313736001321709
+      }
+    },
+    {
+      "name": "Gradient Boosting",
+      "test": {
+        "mae_volts": 0.5741621135782847,
+        "rmse_volts": 1.0413126342098578,
+        "r2": 0.5849064437686105
+      }
+    }
+  ],
+  "limitations": [
+    "One random seed gives a single estimate with split sensitivity.",
+    "Framework formula is a coarse grouping and does not guarantee all related chemistries are separated.",
+    "Dataset provenance and target measurement status have not been independently verified.",
+    "Outlier targets can strongly affect RMSE and should be checked against source records.",
+    "This benchmark does not select or replace the deployed production model."
+  ]
+}

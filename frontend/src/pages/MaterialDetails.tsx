@@ -10,14 +10,16 @@ import {
   Actions,
   MaterialCard,
 } from "../components/UI";
+import type { Material, SimilarMaterial, StructureResponse } from "../services/contracts";
+
 const Viewer = lazy(() => import("../components/CrystalViewer"));
-function StructurePanel({ id, m }: { id: string; m: any }) {
-  const { data, error, loading } = useData("/materials/" + id + "/structure");
+function StructurePanel({ id, m }: { id: string; m: Material }) {
+  const { data, error, loading } = useData<StructureResponse>("/materials/" + id + "/structure");
   return (
     <section className="panel">
       <h2>Crystal structure</h2>
       <Link className="button outline" to={"/structures/" + encodeURIComponent(id)}>
-        Open Dedicated Structure Workspace
+        Open Crystal Lab
       </Link>
       <State loading={loading} error={error} />
       {data?.available ? (
@@ -55,12 +57,12 @@ function StructurePanel({ id, m }: { id: string; m: any }) {
   );
 }
 function Similar({ id }: { id: string }) {
-  const { data, error, loading } = useData("/materials/" + id + "/similar");
+  const { data, error, loading } = useData<SimilarMaterial[]>("/materials/" + id + "/similar");
   return (
     <section>
       <h2>Similar materials</h2>
       <State loading={loading} error={error} />
-      {data?.map((m: any) => (
+      {data?.map((m) => (
         <MaterialCard key={m.id} m={m} />
       ))}
     </section>
@@ -68,7 +70,7 @@ function Similar({ id }: { id: string }) {
 }
 export default function MaterialDetails() {
   const { id } = useParams();
-  const { data: m, error, loading } = useData("/materials/" + id);
+  const { data: m, error, loading } = useData<Material>("/materials/" + id);
   const [tab, setTab] = useState("Overview");
   if (!m)
     return (

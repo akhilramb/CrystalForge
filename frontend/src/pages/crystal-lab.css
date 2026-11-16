@@ -1,0 +1,48 @@
+.crystal-lab .crystal-workspace {
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 31%);
+  gap: 16px;
+}
+
+.crystal-lab .lab-stage {
+  min-width: 0;
+  padding: 14px;
+  background: #152636;
+  color: #e5f0f8;
+  border-color: #3b5467;
+}
+
+.lab-viewer .actions {
+  gap: 8px 14px;
+  align-items: center;
+}
+.lab-viewer .ghost {
+  color: #e5f0f8;
+  background: #23394c;
+  border-color: #496879;
+}
+.lab-viewer .ghost:hover { background: #305469; }
+.lab-viewer input[type="checkbox"] { accent-color: #77d3d7; }
+.lab-viewer .viewer {
+  height: clamp(350px, 58vh, 690px);
+  margin: 14px 0 8px;
+  border: 1px solid #496879;
+  background: #111f2e;
+}
+.lab-viewer .viewer:fullscreen { height: 100%; margin: 0; }
+.lab-viewer .muted { color: #b6cad8; margin-bottom: 0; }
+.lab-viewer .tag { color: #e5f0f8; background: #263d50; }
+
+.crystal-lab .lab-inspector { padding: 20px; min-width: 0; }
+.lab-inspector h3 { margin-top: 18px; }
+.lab-inspector label { margin-bottom: 5px; margin-top: 8px; }
+.lab-inspector dl {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+.lab-inspector dd { font-variant-numeric: tabular-nums; }
+.lab-inspector a { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 850px) {
+  .crystal-lab .crystal-workspace { grid-template-columns: minmax(0, 1fr); }
+}

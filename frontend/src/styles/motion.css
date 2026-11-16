@@ -1,0 +1,102 @@
+/* Motion changes paint and transforms only, keeping the existing layout. */
+.animated-number {
+  display: inline-grid;
+  font-variant-numeric: tabular-nums;
+}
+.animated-number > span { grid-area: 1 / 1; }
+.animated-number > span:first-child { visibility: hidden; }
+
+.hero-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--motion-accent, #167d89);
+  mask-image: linear-gradient(90deg, black 20%, transparent 40%, transparent 60%, black 80%);
+}
+.hero-atmosphere i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 7px currentColor;
+  opacity: .28;
+}
+.hero-crystal {
+  position: absolute;
+  right: 7%;
+  top: 26%;
+  width: clamp(42px, 10vw, 150px);
+  height: auto;
+  opacity: .23;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(9px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer {
+    50% { opacity: .62; transform: translateY(-4px); }
+  }
+  @keyframes crystal-turn {
+    from { transform: perspective(400px) rotateY(0deg) rotateZ(-12deg); }
+    to { transform: perspective(400px) rotateY(360deg) rotateZ(-12deg); }
+  }
+  .hero-atmosphere[data-playing="true"] i {
+    animation: shimmer 6s ease-in-out var(--phase) infinite;
+  }
+  .hero-atmosphere[data-playing="true"] .hero-crystal {
+    animation: crystal-turn 34s linear infinite;
+  }
+  .hero-inner > :is(.pill, h1, p, .actions, .hero-foot) {
+    animation: enter .55s ease-out both;
+  }
+  .hero-inner > h1 { animation-delay: .07s; }
+  .hero-inner > p { animation-delay: .14s; }
+  .hero-inner > .actions { animation-delay: .2s; }
+  .hero-inner > .hero-foot { animation-delay: .25s; }
+  :is(.home-section, .dark-band, .chart, .voltage-result)[data-reveal="false"] {
+    opacity: 0;
+  }
+  [data-reveal="false"]:focus-within { opacity: 1; }
+  [data-reveal="true"] { animation: enter .42s ease-out both; }
+  [data-reveal="true"] .feature { animation: enter .4s ease-out both; }
+  [data-reveal="true"] .feature:nth-child(2) { animation-delay: .06s; }
+  [data-reveal="true"] .feature:nth-child(3) { animation-delay: .12s; }
+  [data-reveal="true"] .feature:nth-child(4) { animation-delay: .18s; }
+  .page-head, .auth-form-wrap, .toast, .error { animation: enter .24s ease-out both; }
+  .material-card {
+    transition: translate .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .material-card .card-title,
+  .feature .feature-top svg { transition: translate .2s ease; }
+  .nav-links a { transition: color .2s, border-color .2s; }
+  :is(.button, .ghost, .auth-submit):active:not(:disabled) { translate: 0 1px; }
+  @keyframes chart-grow {
+    from { scale: 1 0; opacity: .25; }
+    to { scale: 1 1; opacity: 1; }
+  }
+  .chart[data-reveal="true"] .recharts-bar-rectangle {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: chart-grow .38s ease-out both;
+  }
+  @media (hover: hover) {
+    .material-card:hover { translate: 0 -3px; }
+    .material-card:hover .card-title,
+    .feature:hover .feature-top svg { translate: 0 -2px; }
+  }
+}
+.material-card:is(:hover, :focus-within) {
+  border-color: var(--motion-accent, #167d89);
+  box-shadow: 0 8px 20px #149db51a;
+}
+@media (max-width: 700px) {
+  .hero-crystal { top: 8%; right: 5%; }
+  .hero-atmosphere i:nth-child(even) { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature:hover { transform: none; }
+}

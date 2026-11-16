@@ -9,14 +9,20 @@ import {
   Exports,
   MaterialCard,
 } from "../components/UI";
-export function PredictionResult({ result: r }: { result: any }) {
+import { AnimatedNumber } from "../components/AnimatedNumber";
+import { useInView } from "../hooks/useInView";
+
+import type { MaterialPage, MaterialSummary, PredictionInput, PredictionResponse } from "../services/contracts";
+
+export function PredictionResult({ result: r }: { result: PredictionResponse }) {
+  const entrance = useInView<HTMLElement>();
   return (
     <div className="result-content">
-      <section className="voltage-result">
+      <section className="voltage-result" ref={entrance.ref} data-reveal={entrance.visible}>
         <div>
           <span className="eyebrow">MODEL-PREDICTED ELECTRODE VOLTAGE</span>
           <h2>
-            {fmt(r.predicted_voltage)} <small>V</small>
+            <AnimatedNumber value={r.predicted_voltage} /> <small>V</small>
           </h2>
           <p>
             90% marginal prediction interval
@@ -36,12 +42,23 @@ export function PredictionResult({ result: r }: { result: any }) {
           <small>{r.model_version}</small>
         </div>
       </section>
+      <section className="panel" aria-label="Prediction evidence">
+        <h3>Prediction evidence</h3>
+        <p>
+          Model version: {r.model_version ?? "Unavailable"}. The interval
+          estimates coverage across comparable records. CrystalForge
+          does not assign a reliability rating to an individual chemistry.
+        </p>
+        <Link className="text-link" to="/model#framework-benchmark">
+          View the unseen-framework benchmark
+        </Link>
+      </section>
       {r.warnings?.map((w: string) => (
         <p key={w} className="notice">
           {w}
         </p>
       ))}
-      <Exports id={r.id} history={r.history_id} />
+      <Exports id={r.id} history={r.history_id ?? undefined} />
       {r.id && (
         <Link className="text-link" to={"/materials/" + r.id}>
           Open complete material profile
@@ -51,14 +68,14 @@ export function PredictionResult({ result: r }: { result: any }) {
         <h3>Composition economics</h3>
         <Economics e={r.economics} />
       </section>
-      {r.similar?.length > 0 && (
+      {(r.similar?.length ?? 0) > 0 && (
         <section>
           <h2>Similar known materials</h2>
           <p className="muted">
             Similarity = 100 / (1 + Euclidean distance) in the standardized
             model feature space. It is not a probability.
           </p>
-          {r.similar.map((m: any) => (
+          {r.similar.map((m) => (
             <div key={m.id}>
               <span className="tag">{m.similarity}% feature similarity</span>
               <MaterialCard m={m} />
@@ -74,15 +91,15 @@ export default function Predict() {
   const [mode, setMode] = useState(params.has("id") ? "catalog" : "formula");
   const [id, setId] = useState(params.get("id") || "");
   const [query, setQuery] = useState("");
-  const [matches, setMatches] = useState<any[]>([]);
-  const [form, setForm] = useState<any>({
+  const [matches, setMatches] = useState<MaterialSummary[]>([]);
+  const [form, setForm] = useState<PredictionInput>({
     formula: "LiFePO4",
     working_ion: "Li",
     crystal_system: "Orthorhombic",
     space_group_number: 62,
   });
-  const [result, setResult] = useState<any>(null),
-    [previous, setPrevious] = useState<any>(null),
+  const [result, setResult] = useState<PredictionResponse | null>(null),
+    [previous, setPrevious] = useState<PredictionResponse | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   async function submit(e: React.FormEvent) {
@@ -90,19 +107,21 @@ export default function Predict() {
     setBusy(true);
     setError("");
     try {
-      const r = await api(
+      const r = await api<PredictionResponse>(
         "/predict",
         mode === "catalog" ? { material_id: id } : form,
       );
       if (result) setPrevious(result);
       setResult(r);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Request failed.");
     } finally {
       setBusy(false);
     }
   }
-  const change = (k: string, v: any) => setForm({ ...form, [k]: v });
+  function change<K extends keyof PredictionInput>(key: K, value: PredictionInput[K]) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
   return (
     <div className="container">
       <Heading
@@ -141,15 +160,15 @@ export default function Predict() {
                     try {
                       setMatches(
                         (
-                          await api(
+                          await api<MaterialPage>(
                             "/materials?q=" +
                               encodeURIComponent(e.target.value) +
                               "&page_size=8",
                           )
                         ).items,
                       );
-                    } catch (e: any) {
-                      setError(e.message);
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : "Request failed.");
                     }
                   }}
                 />

@@ -1,8 +1,23 @@
-export async function api(path: string, body?: unknown, method?: string, signal?: AbortSignal) {
+let authToken: string | null = null;
+
+export function setAuthToken(token: string | null) {
+  authToken = token;
+}
+
+export async function api<T = any>(
+  path: string,
+  body?: unknown,
+  method?: string,
+  signal?: AbortSignal,
+) {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (authToken) headers.Authorization = `Bearer ${authToken}`;
   const r = await fetch("/api" + path, {
     signal,
     method: method || (body ? "POST" : "GET"),
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!r.ok) {
@@ -18,16 +33,20 @@ export async function api(path: string, body?: unknown, method?: string, signal?
         : d.detail || "Request failed.",
     );
   }
-  return r.json();
+  return (await r.json()) as T;
 }
 export async function downloadReport(
   material_id: string | undefined,
   history_id: number | undefined,
   format: string,
 ) {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (authToken) headers.Authorization = `Bearer ${authToken}`;
   const r = await fetch("/api/reports", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ material_id, history_id, format }),
   });
   if (!r.ok) throw new Error("Report could not be generated.");

@@ -9,8 +9,10 @@ import {
   Actions,
 } from "../components/UI";
 import { ions, systems, fmt } from "../services/api";
+import type { MaterialPage } from "../services/contracts";
+
 export default function Materials() {
-  const [filter, setFilter] = useState<any>({
+  const [filter, setFilter] = useState<Record<string, string>>({
       q: "",
       ion: "",
       system: "",
@@ -25,8 +27,8 @@ export default function Materials() {
         .map(([k, v]) => [k, String(v)]),
     ),
   );
-  const { data, error, loading } = useData("/materials?" + params);
-  const change = (k: string, v: any) => {
+  const { data, error, loading } = useData<MaterialPage>("/materials?" + params);
+  const change = (k: string, v: string) => {
     setPage(1);
     setFilter({ ...filter, [k]: v });
   };
@@ -134,7 +136,7 @@ export default function Materials() {
       {!loading &&
         data &&
         (view === "cards" ? (
-          data.items.map((m: any) => <MaterialCard m={m} key={m.id} />)
+          data.items.map((m) => <MaterialCard m={m} key={m.id} />)
         ) : (
           <div className="table-scroll panel">
             <table>
@@ -149,7 +151,7 @@ export default function Materials() {
                 </tr>
               </thead>
               <tbody>
-                {data.items.map((m: any) => (
+                {data.items.map((m) => (
                   <tr key={m.id}>
                     <td>
                       <Link to={"/materials/" + m.id}>{m.formula}</Link>

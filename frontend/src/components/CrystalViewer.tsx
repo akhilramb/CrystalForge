@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import type { CrystalGeometry, Vector } from "../services/contracts";
 const colors = [
   "#afc564",
   "#6a9cc7",
@@ -9,14 +10,19 @@ const colors = [
   "#a3a1c2",
   "#5eab9a",
 ];
-type Vector = [number, number, number];
-export type CrystalGeometry = {
-  lattice: [Vector, Vector, Vector];
-  sites: { element: string; position: Vector }[];
+
+type ViewerProps = {
+  structure: CrystalGeometry;
+  lab?: boolean;
+  selectedSite?: number | null;
+  onSelectSite?: (index: number) => void;
 };
 
-export default function CrystalViewer({ structure }: { structure: CrystalGeometry }) {
+export default function CrystalViewer({
+  structure, lab = false, selectedSite = null, onSelectSite,
+}: ViewerProps) {
   const host = useRef<HTMLDivElement>(null);
+  const highlight = useRef<(index: number | null) => void>(() => {});
   const reset = useRef<() => void>(() => {});
   const [atoms, setAtoms] = useState(true),
     [bonds, setBonds] = useState(false),
@@ -31,7 +37,7 @@ export default function CrystalViewer({ structure }: { structure: CrystalGeometr
     if (!host.current) return;
     const container = host.current;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#202922");
+    scene.background = new THREE.Color(lab ? "#111f2e" : "#202922");
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
     let renderer: THREE.WebGLRenderer;
     try {
@@ -84,6 +90,7 @@ export default function CrystalViewer({ structure }: { structure: CrystalGeometr
         group.add(label);
       });
     }
+    const atomMeshes: THREE.Mesh[] = [];
     if (atoms)
       structure.sites.forEach((s, i) => {
         const mesh = new THREE.Mesh(
@@ -91,6 +98,8 @@ export default function CrystalViewer({ structure }: { structure: CrystalGeometr
           materials[elements.indexOf(s.element)],
         );
         mesh.position.copy(positions[i]);
+        mesh.userData.siteIndex = i;
+        atomMeshes.push(mesh);
         group.add(mesh);
       });
     if (bonds)
@@ -144,6 +153,43 @@ export default function CrystalViewer({ structure }: { structure: CrystalGeometr
     };
     reset.current();
     const render = () => renderer.render(scene, camera);
+    const selectionMaterial = new THREE.MeshBasicMaterial({
+      color: "#8df1ef", wireframe: true,
+    });
+    const selection = new THREE.Mesh(sphere, selectionMaterial);
+    selection.scale.setScalar(1.22);
+    selection.visible = false;
+    group.add(selection);
+    highlight.current = (index) => {
+      selection.visible = atoms && index !== null && !!positions[index];
+      if (selection.visible && index !== null) selection.position.copy(positions[index]);
+      render();
+    };
+
+    const ray = new THREE.Raycaster();
+    let start: { x: number; y: number; id: number } | undefined;
+    function pointerDown(event: PointerEvent) {
+      start = event.isPrimary && event.button === 0
+        ? { x: event.clientX, y: event.clientY, id: event.pointerId }
+        : undefined;
+    }
+    function pointerUp(event: PointerEvent) {
+      const origin = start;
+      start = undefined;
+      if (!origin || origin.id !== event.pointerId ||
+          Math.hypot(event.clientX - origin.x, event.clientY - origin.y) > 5) return;
+      const bounds = renderer.domElement.getBoundingClientRect();
+      ray.setFromCamera(new THREE.Vector2(
+        ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
+        1 - ((event.clientY - bounds.top) / bounds.height) * 2,
+      ), camera);
+      const hit = ray.intersectObjects(atomMeshes, false)[0];
+      if (hit) onSelectSite?.(hit.object.userData.siteIndex);
+    }
+    if (onSelectSite) {
+      renderer.domElement.addEventListener("pointerdown", pointerDown);
+      renderer.domElement.addEventListener("pointerup", pointerUp);
+    }
     controls.addEventListener("change", render);
     const observer = new ResizeObserver(() => {
       const width = container.clientWidth;
@@ -157,6 +203,10 @@ export default function CrystalViewer({ structure }: { structure: CrystalGeometr
     observer.observe(container);
     return () => {
       observer.disconnect();
+      highlight.current = () => {};
+      renderer.domElement.removeEventListener("pointerdown", pointerDown);
+      renderer.domElement.removeEventListener("pointerup", pointerUp);
+      selectionMaterial.dispose();
       controls.removeEventListener("change", render);
       controls.dispose();
       sphere.dispose();
@@ -174,9 +224,12 @@ export default function CrystalViewer({ structure }: { structure: CrystalGeometr
       renderer.dispose();
       container.removeChild(renderer.domElement);
     };
-  }, [structure, atoms, bonds, cell, labels, large]);
+  }, [structure, atoms, bonds, cell, labels, large, lab, onSelectSite]);
+  useEffect(() => {
+    highlight.current(selectedSite);
+  }, [selectedSite, structure, atoms, bonds, cell, labels, large, lab, onSelectSite]);
   return (
-    <div>
+    <div className={lab ? "lab-viewer" : undefined}>
       <div className="actions">
         <button className="ghost small" onClick={() => reset.current()}>
           Reset view

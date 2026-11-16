@@ -10,6 +10,8 @@ import {
   Scatter,
   ReferenceLine,
 } from "recharts";
+import { useInView } from "../hooks/useInView";
+
 export function Distribution({
   title,
   data,
@@ -19,8 +21,9 @@ export function Distribution({
   data: any[];
   color?: string;
 }) {
+  const entrance = useInView<HTMLElement>();
   return (
-    <section className="chart panel">
+    <section className="chart panel" ref={entrance.ref} data-reveal={entrance.visible}>
       <h3>{title}</h3>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data}>
@@ -34,6 +37,7 @@ export function Distribution({
           <YAxis tick={{ fontSize: 12 }} allowDecimals={false} width={45} />
           <Tooltip />
           <Bar
+            isAnimationActive={false}
             dataKey="value"
             name="Records"
             fill={color}
@@ -45,11 +49,12 @@ export function Distribution({
   );
 }
 export function Predictions({ points }: { points: any[] }) {
+  const entrance = useInView<HTMLElement>();
   const v = points.flatMap((p) => [p.actual, p.predicted]);
   const min = Math.floor(Math.min(...v)),
     max = Math.ceil(Math.max(...v));
   return (
-    <section className="panel chart">
+    <section className="panel chart" ref={entrance.ref} data-reveal={entrance.visible}>
       <h3>Actual vs predicted voltage</h3>
       <p className="muted">
         Held-out test records · ideal prediction on the diagonal
@@ -84,7 +89,7 @@ export function Predictions({ points }: { points: any[] }) {
             stroke="#253229"
             strokeDasharray="5 5"
           />
-          <Scatter data={points} fill="#92a24d" fillOpacity={0.45} />
+          <Scatter isAnimationActive={false} data={points} fill="#92a24d" fillOpacity={0.45} />
         </ScatterChart>
       </ResponsiveContainer>
     </section>

@@ -1,0 +1,92 @@
+.theme-toggle { padding: 8px; flex-shrink: 0; }
+.auth-main > .theme-toggle {
+  position: absolute;
+  z-index: 2;
+  top: 25px;
+  left: min(43%, calc(100% - 58px));
+}
+@media (max-width: 680px) {
+  .auth-main > .theme-toggle { left: auto; right: 22px; top: 18px; }
+}
+
+/* Theme tokens are separate from layout and motion. Light is the default. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #e7eff6;
+  --muted: #a6b8c9;
+  --olive: #79cbd0;
+  --lime: #83cbd0;
+  --line: #34495c;
+  --surface: #162534;
+  --surface-raised: #203345;
+  --motion-accent: #79d3db;
+  color: var(--ink);
+  background: #0e1926;
+}
+[data-theme="dark"] :is(
+  .navbar, .nav-links, footer, .dropdown, .panel, .metric, .material-card,
+  .feature, .structure-empty, .prediction-empty, .skip, .auth-layout
+) {
+  background: var(--surface);
+  color: var(--ink);
+}
+[data-theme="dark"] :is(
+  .segmented, .segmented button.active, .notice, .tag, .pill, .empty-symbol,
+  .compare-button span, .selected-row td, .compare-tray, .account-avatar,
+  .account-card-icon, .account-nav .selected, .auth-mobile-mark
+),
+[data-theme="dark"] :is(.dropdown a, .button.outline, .ghost, .feature, .account-nav a, .nav-account, .nav-login):hover,
+[data-theme="dark"] .economics > .two-col .metric {
+  background: var(--surface-raised);
+  color: var(--ink);
+}
+[data-theme="dark"] :is(.hero h1 span, .feature-top, .tabs button.active, .auth-switch a, .auth-options a, .auth-check a) {
+  color: var(--olive);
+}
+[data-theme="dark"] :is(
+  .nav-links a, .hero p, .hero-foot, .breadcrumb, .card-metrics small,
+  .metric > span, .metric em, .account-nav a, .auth-subtitle, .auth-foot,
+  .auth-options, .auth-switch, .auth-form > label, .auth-form-wrap h1
+) { color: var(--muted); }
+[data-theme="dark"] :is(.dark-band, .voltage-result, .toast) { background: #1a2e40; }
+[data-theme="dark"] :is(.button:not(.outline), .auth-submit) {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: #102331;
+}
+[data-theme="dark"] :is(.button:not(.outline), .auth-submit):hover { background: #a4e3e5; }
+[data-theme="dark"] :is(
+  input:not([type="range"]):not([type="checkbox"]), select, textarea,
+  .auth-input, .auth-social button
+) {
+  background: var(--surface-raised);
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .auth-input input { background: transparent; }
+[data-theme="dark"] :is(.auth-message, .notice) {
+  background: var(--surface-raised);
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] :is(.error, .auth-message.error) {
+  background: #3b252d;
+  color: #ffced0;
+  border-color: #8d5661;
+}
+[data-theme="dark"] .recharts-default-tooltip {
+  background: var(--surface) !important;
+  border-color: var(--line) !important;
+}
+[data-theme="dark"] .recharts-text { fill: var(--muted); }
+[data-theme="dark"] .recharts-cartesian-grid line { stroke: var(--line); }
+[data-theme="dark"] .recharts-reference-line line { stroke: var(--muted); }
+
+[data-theme="dark"] .hero { background: #172a3a; }
+[data-theme="dark"] .nav-links a.active,
+[data-theme="dark"] .auth-form-wrap h1 { color: var(--ink); }
+[data-theme="dark"] .auth-check { color: var(--muted) !important; }
+[data-theme="dark"] .danger { color: #ffb8ba !important; }
+@media (max-width: 700px) {
+  .nav-tools { gap: 8px; }
+}

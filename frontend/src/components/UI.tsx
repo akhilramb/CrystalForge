@@ -2,20 +2,25 @@ import { useEffect, useState, createContext, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Bookmark, Layers, Download, LoaderCircle } from "lucide-react";
 import { api, fmt, downloadReport } from "../services/api";
+import { useInView } from "../hooks/useInView";
+import { AnimatedNumber } from "./AnimatedNumber";
+
+import type { EconomicsResult, MaterialSummary } from "../services/contracts";
+
 export const Context = createContext<{
   compare: string[];
   toggle: (id: string) => void;
   notify: (s: string) => void;
 }>({ compare: [], toggle: () => {}, notify: () => {} });
-export function useData(path: string) {
-  const [data, setData] = useState<any>(null),
+export function useData<T = any>(path: string) {
+  const [data, setData] = useState<T | null>(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true);
   useEffect(() => {
     let live = true;
     setLoading(true);
     setError("");
-    api(path)
+    api<T>(path)
       .then((d) => {
         if (live) setData(d);
       })
@@ -85,13 +90,13 @@ export function Metric({
     <div className="metric">
       <span>{label}</span>
       <strong>
-        {fmt(value)} <small>{value != null ? unit : ""}</small>
+        {typeof value === "number" ? <AnimatedNumber value={value} /> : fmt(value)} <small>{value != null ? unit : ""}</small>
       </strong>
       {kind && <em>{kind}</em>}
     </div>
   );
 }
-export function Actions({ m }: { m: any }) {
+export function Actions({ m }: { m: Pick<MaterialSummary, "id"> }) {
   const { compare, toggle, notify } = useContext(Context);
   return (
     <div className="actions">
@@ -120,9 +125,10 @@ export function Actions({ m }: { m: any }) {
     </div>
   );
 }
-export function MaterialCard({ m, rank }: { m: any; rank?: number }) {
+export function MaterialCard({ m, rank }: { m: MaterialSummary & { score?: number; contributions?: Record<string, number>; capacity_grav?: number | null }; rank?: number }) {
+  const entrance = useInView<HTMLElement>();
   return (
-    <article className="material-card">
+    <article className="material-card" ref={entrance.ref} data-reveal={entrance.visible}>
       {rank && <div className="rank">{String(rank).padStart(2, "0")}</div>}
       <div className="material-main">
         <div className="card-title">
@@ -208,7 +214,7 @@ export function Exports({ id, history }: { id?: string; history?: number }) {
     </div>
   );
 }
-export function Economics({ e }: { e: any }) {
+export function Economics({ e }: { e: EconomicsResult }) {
   return (
     <div className="economics">
       <div className="two-col">
@@ -240,7 +246,7 @@ export function Economics({ e }: { e: any }) {
               </tr>
             </thead>
             <tbody>
-              {e.breakdown.map((r: any) => (
+              {e.breakdown.map((r) => (
                 <tr key={r.element}>
                   <td>{r.element}</td>
                   <td>{fmt(r.mass_fraction * 100)}%</td>
