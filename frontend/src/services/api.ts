@@ -1,5 +1,6 @@
-export async function api(path: string, body?: unknown, method?: string) {
+export async function api(path: string, body?: unknown, method?: string, signal?: AbortSignal) {
   const r = await fetch("/api" + path, {
+    signal,
     method: method || (body ? "POST" : "GET"),
     headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,

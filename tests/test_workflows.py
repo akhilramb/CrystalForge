@@ -1,8 +1,3 @@
-import os
-from pathlib import Path
-import tempfile
-
-os.environ["CRYSTALFORGE_DB"] = str(Path(tempfile.mkdtemp()) / "test.db")
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
@@ -92,7 +87,9 @@ def test_discovery_constraints_and_ranking():
         assert m["score"] == pytest.approx(sum(m["contributions"].values()), abs=0.11)
 
 
-def test_saved_compare_structure_and_delete():
+def test_saved_compare_structure_and_delete(monkeypatch, tmp_path):
+    monkeypatch.delenv("MP_API_KEY", raising=False)
+    monkeypatch.setenv("CRYSTALFORGE_STRUCTURE_CACHE", str(tmp_path))
     id = "cf-00001"
     assert (
         client.post(
@@ -141,3 +138,11 @@ def test_browser_sessions_cannot_read_or_delete_other_history():
     assert a.get("/api/history/" + str(row["history_id"])).status_code == 200
     a.post("/api/saved", json={"material_id": "cf-00002", "note": "Private note"})
     assert b.get("/api/saved").json() == []
+
+
+def test_cloud_run_readiness(monkeypatch):
+    assert client.get("/api/ready").json() == {"status": "ready"}
+    monkeypatch.setattr(catalog(), "bundle", None)
+    response = client.get("/api/ready")
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Model unavailable."}

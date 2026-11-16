@@ -7,10 +7,10 @@ import numpy as np
 from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, model_validator
-from pymatgen.core import Structure
 from backend.config import ROOT
 from backend.services.catalog import catalog
 from backend.services.discovery import discover
+from backend.services.structures import resolve_structure
 from backend.services import storage
 from backend.services.reports import generate
 from ml.feature_builder import IONS, SYSTEMS
@@ -138,6 +138,13 @@ def health():
     }
 
 
+@app.get("/api/ready")
+def ready():
+    if catalog().bundle is None:
+        raise HTTPException(503, "Model unavailable.")
+    return {"status": "ready"}
+
+
 @app.get("/api/options")
 def options():
     return {"ions": IONS, "systems": SYSTEMS}
@@ -186,28 +193,7 @@ def similar(id: str):
 
 @app.get("/api/materials/{id}/structure")
 def structure(id: str):
-    r = run(catalog().record, id)
-    mp = r.get("preferred_structure_mp_id")
-    # Only a fixed local path derived from a verified catalog ID; never arbitrary URL fetching.
-    f = ROOT / "data/structures" / f"{mp}.cif"
-    if not f.exists():
-        return {
-            "available": False,
-            "message": "Full atomic structure is not available for this material.",
-            "source_url": r.get("materials_project_structure_url"),
-        }
-    try:
-        s = Structure.from_file(f)
-        return {
-            "available": True,
-            "source_url": r.get("materials_project_structure_url"),
-            "lattice": s.lattice.matrix.tolist(),
-            "sites": [
-                {"element": str(x.specie), "position": x.coords.tolist()} for x in s
-            ],
-        }
-    except Exception:
-        raise HTTPException(422, "The stored CIF could not be parsed.")
+    return resolve_structure(run(catalog().record, id, False))
 
 
 @app.post("/api/predict")

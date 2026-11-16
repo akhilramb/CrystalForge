@@ -5,9 +5,11 @@ services:
     plan: free
     region: singapore
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /api/health
+    healthCheckPath: /api/ready
     envVars:
       - key: CRYSTALFORGE_DB
         value: /tmp/crystalforge.db
       - key: CRYSTALFORGE_SECURE_COOKIE
         value: "1"
+      - key: MP_API_KEY
+        sync: false

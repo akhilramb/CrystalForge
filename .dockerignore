@@ -6,3 +6,10 @@
 frontend/dist
 frontend/test-results
 .pytest_cache
+.env
+.env.*
+**/.env
+**/.env.*
+**/application_default_credentials.json
+data/structure-cache
+data/structures/*.cif

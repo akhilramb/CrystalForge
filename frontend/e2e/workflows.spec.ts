@@ -85,3 +85,43 @@ test("mobile routes fit without page overflow", async ({ page }) => {
     ).toBeTruthy();
   }
 });
+
+test("dedicated structure workspace handles unavailable coordinates and retry", async ({ page }) => {
+  await page.goto("/materials/cf-00001");
+  await page.getByRole("tab", { name: "Structure", exact: true }).click();
+  await page.getByRole("link", { name: "Open Dedicated Structure Workspace" }).click();
+  await expect(page).toHaveURL(/\/structures\/cf-00001$/);
+  await expect(page.getByRole("heading", { name: "Crystal structure workspace" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Structure unavailable" })).toBeVisible();
+  const request = page.waitForResponse(/\/api\/materials\/cf-00001\/structure$/);
+  await page.getByRole("button", { name: "Retry", exact: true }).click();
+  expect((await request).ok()).toBeTruthy();
+});
+
+test("structure viewer renders a cell and provenance on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  // A controlled response exercises the browser without upstream credentials.
+  await page.route("**/api/materials/cf-00001/structure", (route) => route.fulfill({
+    json: {
+      available: true,
+      material_id: "mp-1236215",
+      formula: "CsLiAcO3",
+      lattice: [[6, 0, 0], [0, 6, 0], [0, 0, 6]],
+      lengths: [6, 6, 6],
+      angles: [90, 90, 90],
+      volume: 216,
+      symmetry: null,
+      sites: [{ element: "Cs", position: [0, 0, 0] }],
+      source_url: "https://materialsproject.org/materials/mp-1236215",
+      provenance: { source: "Materials Project", method: "cache", retrieved_at: "2026-11-16T00:00:00Z" },
+    },
+  }));
+  await page.goto("/structures/cf-00001");
+  await expect(page.locator(".viewer canvas")).toBeVisible();
+  await expect(page.getByText("Cached Materials Project CIF")).toBeVisible();
+  await page.getByLabel("Atom labels").check();
+  await page.getByLabel("Unit cell").uncheck();
+  await page.getByRole("button", { name: "Reset view" }).click();
+  await expect(page.locator(".viewer canvas")).toHaveCount(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(392);
+});

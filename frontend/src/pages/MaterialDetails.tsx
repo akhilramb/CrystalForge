@@ -16,6 +16,9 @@ function StructurePanel({ id, m }: { id: string; m: any }) {
   return (
     <section className="panel">
       <h2>Crystal structure</h2>
+      <Link className="button outline" to={"/structures/" + encodeURIComponent(id)}>
+        Open Dedicated Structure Workspace
+      </Link>
       <State loading={loading} error={error} />
       {data?.available ? (
         <Suspense fallback={<State loading />}>

@@ -18,6 +18,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 const ModelInfo = lazy(() =>
   import("./pages/Analytics").then((m) => ({ default: m.ModelInfo })),
 );
+const CrystalStructure = lazy(() => import("./pages/CrystalStructure"));
 const Compare = lazy(() => import("./pages/Compare"));
 import History, { Saved, Reports } from "./pages/History";
 import { Context } from "./components/UI";
@@ -140,6 +141,7 @@ function App() {
             <Route path="/discover" element={<Discovery />} />
             <Route path="/materials" element={<Materials />} />
             <Route path="/materials/:id" element={<MaterialDetails />} />
+            <Route path="/structures/:id" element={<CrystalStructure />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/model" element={<ModelInfo />} />
             <Route path="/compare" element={<Compare />} />

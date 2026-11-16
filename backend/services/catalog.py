@@ -22,13 +22,14 @@ class Catalog:
         self.error = None
         try:
             self.bundle = joblib.load(ROOT / "models/model.joblib")
-            fingerprint = (
-                "cf-"
-                + hashlib.sha256(
-                    (ROOT / "data/crystalforge_dataset_enriched.csv").read_bytes()
-                ).hexdigest()[:10]
-            )
-            if fingerprint != self.bundle["metadata"]["version"]:
+            raw = (ROOT / "data/crystalforge_dataset_enriched.csv").read_bytes()
+            lf = raw.replace(b"\r\n", b"\n")
+            # Existing artifacts may be trained on the Windows checkout of this CSV.
+            fingerprints = {
+                "cf-" + hashlib.sha256(content).hexdigest()[:10]
+                for content in (raw, lf, lf.replace(b"\n", b"\r\n"))
+            }
+            if self.bundle["metadata"]["version"] not in fingerprints:
                 raise ValueError(
                     "Dataset changed. Run python -m ml.train to regenerate model artifacts."
                 )

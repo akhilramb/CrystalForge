@@ -23,7 +23,7 @@ If using Python 3.11, substitute `py -3.11` in the venv command. If PowerShell b
 
 Open **http://127.0.0.1:8000**. API documentation: **http://127.0.0.1:8000/docs**.
 
-The trained model is included; training is not needed for the first run. No external API keys or model-service accounts are needed. First-time dependency installation requires internet access. A public website has not been provisioned: these instructions run the application locally.
+The trained model is included; training is not needed for the first run. Prediction and catalog browsing require no external API key. Live crystal retrieval requires the backend Materials Project key described below. These instructions run the application locally.
 
 ## Development
 
@@ -68,7 +68,7 @@ Training recomputes consistent elemental composition descriptors; it does **not*
 
 The supplied battery-group split and fold IDs are used and checked for group crossing. Training folds 1–3 fit five candidates; fold 0 selects by validation MAE. Each model is refit on folds 0–3 for final evaluation. Fold 4 calibrates split-conformal absolute residual intervals; test data is not used in training, selection or calibration. No claim of hyperparameter-optimal models is made.
 
-**Selected:** Gradient Boosting. **Test MAE:** 0.530 V. **RMSE:** 0.897 V. **R²:** 0.664. **90% marginal interval radius:** approximately 0.993 V. Exact outputs: `reports/evaluation.json`.
+**Selected:** Gradient Boosting. **Test MAE:** 0.530 V. **RMSE:** 0.897 V. **R²:** 0.664. **90% marginal interval radius:** approximately 0.993 V. Bundled metrics: `models/model_metadata.json`.
 
 **Important limitation:** 433 framework formulas appear across the supplied train/test partitions. These scores describe the supplied battery-group holdout, not a chemically disjoint benchmark or proven performance on new chemical families. Intervals assume sufficiently exchangeable data and are not guarantees for individual compounds or underrepresented ions. The supplied source provenance has not been independently verified. Existing target values are not presented as experimentally verified measurements.
 
@@ -82,15 +82,29 @@ Ranking normalizes explicit criterion contributions and discloses its formula. M
 
 ### Actual crystal structures
 
-The supplied CSV includes Materials Project identifiers and URLs but **no CIF coordinates**. Therefore the application initially displays **Structure unavailable**, with source links and metadata. It never displays fabricated atoms.
+The catalog contains Materials Project IDs for the discharged state. Open a
+material's **Structure** tab and select **Open Dedicated Structure Workspace**.
+The workspace shows source, retrieval time when available, computed symmetry,
+lattice parameters and Cartesian site coordinates in the Three.js viewer.
 
-To enable a verified structure, obtain the correct discharged-state CIF from its source and save it as:
+1. Obtain an API key from the [Materials Project dashboard](https://materialsproject.org/dashboard).
+2. In Render, open the `crystalforge` service, select **Environment**, and add `MP_API_KEY` with the key as its value.
+3. Save the change and wait for Render to redeploy. Keep the key in Render's environment settings and out of source code.
 
-```text
-data/structures/<preferred_structure_mp_id>.cif
-```
+`GET /api/materials/{id}/structure` accepts a CrystalForge catalog ID. It checks
+for a supplied CIF at `data/structures/<mp-id>.cif`, then a cached CIF, then
+requests the catalog-linked structure through `mp-api`. Cached CIFs are
+validated with Pymatgen and include the original retrieval timestamp. Supplied
+CIFs have no inferred retrieval date. Match supplied files to the exact source
+ID and discharged composition. The viewer draws distance contacts within the
+displayed cell as a visual guide. Structure retrieval and symmetry calculation
+do not establish experimental verification or electrode suitability.
 
-For example, a record mapped to `mp-1236215` expects `data/structures/mp-1236215.cif`. Use only a CIF that actually matches that ID. The backend parses it with pymatgen and returns lattice vectors and Cartesian atomic positions. The lazy-loaded Three.js viewer supports rotate, zoom, reset, atoms, distance-guide bonds, cell, legend and fullscreen. Bonds are a visual distance heuristic, not a chemical bond-order calculation. No automatic external structure retrieval or Materials Project API key is configured.
+Set `CRYSTALFORGE_STRUCTURE_CACHE` to a writable directory to override the
+default `data/structure-cache`. On Render Free, the filesystem is temporary,
+so SQLite records and cached CIFs may be lost when the service restarts or
+spins down. Cached structures are snapshots. Remove the relevant cached CIF
+to request a fresh copy.
 
 ## Project layout
 
@@ -120,12 +134,20 @@ npx.cmd playwright install chromium
 npm.cmd run test:e2e
 ```
 
-Stop any existing server on port 8000 first. The browser-test runner starts its own backend. The development environment verified the API tests and production frontend build, but blocked browser execution; browser tests were authored and are pending execution on a supported runner.
+Stop any existing server on port 8000 first. The browser-test runner starts its own backend. Browser tests start the built application and check prediction, discovery, comparison, reports, mobile layouts and the structure workspace’s unavailable and retry states. Live authenticated Materials Project retrieval must be checked with a configured server key.
 
-## Deploy the full website
+## Deploy the full website on Render
 
-[Deploy CrystalForge on Render](https://render.com/deploy?repo=https://github.com/akhilramb/CrystalForge)
+The repository includes a Dockerfile and `render.yaml`. The existing Render
+web service uses the Free instance type. In its dashboard, open **Settings**
+and set the deploy branch to the Git branch containing these changes. In
+**Environment**, set `MP_API_KEY` using a value from the Materials Project
+dashboard. Render builds and deploys when you push a new commit to that branch.
 
-The repository includes a multi-stage Dockerfile and `render.yaml`. The button opens Render setup for the complete frontend and Python backend. Sign in to your Render account, review the free web service, and deploy. Render provides the actual website URL after deployment succeeds; the GitHub repository URL is not a live application URL.
-
-The free service uses temporary SQLite storage: saved notes and history can disappear on redeploy/restart and the service may sleep when idle. Each browser has an isolated history and bookmark session; clearing cookies starts a new session. For durable research records, configure persistent storage and set `CRYSTALFORGE_DB` to that mounted location. A paid service is not automatically requested by this configuration. No hosting account credentials are included.
+Free web services spin down after 15 minutes without incoming traffic and can
+take about a minute to wake on the next request. The Free plan does not offer
+always-on instances. Free service files are temporary, so SQLite history,
+saved notes and downloaded CIF cache files may be lost after restart, spin-down
+or redeploy. The deployed code uses the existing anonymous browser-session
+model; Render's hostname also starts a different browser session from any
+earlier host.

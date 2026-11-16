@@ -15,5 +15,5 @@ COPY ml/ ml/
 COPY data/ data/
 COPY models/ models/
 COPY --from=frontend /build/dist frontend/dist
-EXPOSE 10000
-CMD ["sh", "-c", "python -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-10000} --proxy-headers"]
+EXPOSE 8080
+CMD ["sh", "-c", "exec python -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8080} --proxy-headers"]
