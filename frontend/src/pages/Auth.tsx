@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
-  Atom,
   Hexagon,
   Eye,
   EyeOff,
@@ -33,9 +32,6 @@ function AuthFrame({
           </span>
         </Link>
         <div className="auth-form-wrap">
-          <div className="auth-mobile-mark">
-            <Atom size={25} />
-          </div>
           <h1>{title}</h1>
           <p className="auth-subtitle">{subtitle}</p>
           {children}
@@ -45,72 +41,6 @@ function AuthFrame({
           <Link to="/">Explore the platform</Link>
         </div>
       </section>
-      <aside
-        className="auth-visual"
-        aria-label="CrystalForge scientific materials platform"
-      >
-        <div className="auth-visual-copy">
-          <span className="auth-kicker">MATERIALS INTELLIGENCE</span>
-          <h2>
-            AI-Powered Crystal
-            <br />
-            Materials Discovery
-          </h2>
-          <p>
-            Explore materials, evaluate predictions, and inspect structures with
-            scientific provenance.
-          </p>
-        </div>
-        <div className="auth-crystal-art" aria-hidden="true">
-          <div className="auth-orbit orbit-one" />
-          <div className="auth-orbit orbit-two" />
-          <div className="auth-crystal">
-            <i />
-            <b />
-            <em />
-          </div>
-          <span className="crystal-node node-a" />
-          <span className="crystal-node node-b" />
-          <span className="crystal-node node-c" />
-          <span className="crystal-node node-d" />
-        </div>
-        <div className="auth-feature-stack">
-          <div>
-            <span className="feature-icon">
-              <Atom size={17} />
-            </span>
-            <span>
-              <b>Crystal structure workspace</b>
-              <small>Interactive 3D exploration</small>
-            </span>
-            <i>01</i>
-          </div>
-          <div>
-            <span className="feature-icon">
-              <span className="feature-bars">▥</span>
-            </span>
-            <span>
-              <b>Model-guided predictions</b>
-              <small>Transparent model context</small>
-            </span>
-            <i>02</i>
-          </div>
-          <div>
-            <span className="feature-icon">
-              <span className="feature-dots">⋮</span>
-            </span>
-            <span>
-              <b>Materials database</b>
-              <small>Search and compare candidates</small>
-            </span>
-            <i>03</i>
-          </div>
-        </div>
-        <div className="auth-visual-caption">
-          <span>Explore. Predict. Innovate.</span>
-          <span>SCIENTIFIC WORKSPACE&nbsp; / &nbsp;01</span>
-        </div>
-      </aside>
     </div>
   );
 }

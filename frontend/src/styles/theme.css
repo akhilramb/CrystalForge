@@ -3,7 +3,7 @@
   position: absolute;
   z-index: 2;
   top: 25px;
-  left: min(43%, calc(100% - 58px));
+  right: clamp(20px, 5vw, 76px);
 }
 @media (max-width: 680px) {
   .auth-main > .theme-toggle { left: auto; right: 22px; top: 18px; }

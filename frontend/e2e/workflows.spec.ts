@@ -118,6 +118,7 @@ test("login screen exposes usable auth flows and gated provider setup", async ({
   await expect(
     page.getByRole("button", { name: "Continue with Google" }),
   ).toBeDisabled();
+  await expect(page.locator(".auth-visual")).toHaveCount(0);
   await page.getByRole("link", { name: "Create an account" }).click();
   await expect(
     page.getByRole("heading", { name: "Create your account" }),
