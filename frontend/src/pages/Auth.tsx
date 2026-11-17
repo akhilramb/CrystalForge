@@ -81,6 +81,7 @@ export function Login() {
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [providerError, setProviderError] = useState("");
   if (!loading && user) return <Navigate to="/dashboard" replace />;
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -115,26 +116,42 @@ export function Login() {
   }
   async function oauth(provider: "google" | "github") {
     setError("");
-    if (!client) {
-      setError(configError || "Authentication is not configured yet.");
-      return;
-    }
+    setProviderError("");
+    if (!client || busy) return;
+    const label = provider === "google" ? "Google" : "GitHub";
     setBusy(true);
+    let redirecting = false;
     try {
-      const { error: err } = await client.auth.signInWithOAuth({
+      const signal = AbortSignal.timeout(8000);
+      const configResponse = await fetch("/api/auth/config", { signal });
+      if (!configResponse.ok) throw new Error("Auth configuration unavailable");
+      const config = await configResponse.json();
+      const settingsResponse = await fetch(
+        `${config.supabase_url.replace(/\/$/, "")}/auth/v1/settings`,
+        { headers: { apikey: config.publishable_key }, signal },
+      );
+      if (!settingsResponse.ok) throw new Error("Provider settings unavailable");
+      const settings = await settingsResponse.json();
+      if (settings.external?.[provider] !== true) {
+        setProviderError(`${label} sign-in is currently unavailable. Please sign in with email.`);
+        return;
+      }
+
+      setRememberSession(remember);
+      const { data, error: err } = await client.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams:
-            provider === "google"
-              ? { access_type: "offline", prompt: "consent" }
-              : undefined,
+          skipBrowserRedirect: true,
         },
       });
-      if (err) throw err;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Provider sign-in failed.");
-      setBusy(false);
+      if (err || !data.url) throw err ?? new Error("Missing sign-in URL");
+      window.location.assign(data.url);
+      redirecting = true;
+    } catch {
+      setProviderError(`Could not start ${label} sign-in. Try again or sign in with email.`);
+    } finally {
+      if (!redirecting) setBusy(false);
     }
   }
   return (
@@ -147,6 +164,7 @@ export function Login() {
           {configError} Ask the project administrator to configure Supabase.
         </AuthMessage>
       )}
+      {providerError && <AuthMessage error>{providerError}</AuthMessage>}
       <div className="auth-social">
         <button
           type="button"
