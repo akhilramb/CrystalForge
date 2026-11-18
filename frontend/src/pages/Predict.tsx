@@ -24,13 +24,13 @@ export function PredictionResult({ result: r }: { result: PredictionResponse }) 
           <h2>
             <AnimatedNumber value={r.predicted_voltage} /> <small>V</small>
           </h2>
-          <p>
+          {r.interval ? <p>
             90% marginal prediction interval
             <br />
             <b>
               {fmt(r.interval?.[0])} – {fmt(r.interval?.[1])} V
             </b>
-          </p>
+          </p> : <p>No validated prediction interval available.</p>}
         </div>
         <div className="result-identity">
           <span className="pill">{r.working_ion}-ion</span>

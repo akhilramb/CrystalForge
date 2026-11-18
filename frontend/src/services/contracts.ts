@@ -79,7 +79,7 @@ export interface PredictionResponse {
   crystal_system: string | null;
   space_group_number: number | null;
   predicted_voltage: number;
-  interval: [number, number];
+  interval: [number, number] | null;
   model_version?: string;
   history_id?: number | null;
   economics: EconomicsResult;

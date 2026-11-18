@@ -201,7 +201,7 @@ class Catalog:
         out = {
             **inputs,
             "predicted_voltage": p,
-            "interval": [p - q, p + q],
+            "interval": None if inputs["working_ion"] == "Na" else [p - q, p + q],
             "model_version": self.bundle["metadata"]["version"],
             "economics": eco,
             **{
@@ -217,7 +217,11 @@ class Catalog:
             "similar": self.similar(pipe.named_steps["preprocessor"].transform(X)),
             "warnings": [
                 "Hypothetical input: composition and space-group consistency do not establish physical stability.",
-                "90% marginal prediction interval; reliability may be lower outside the training domain.",
+                (
+                    "Exploratory sodium estimate: the model has no sodium-ion training records. No validated sodium prediction interval is available."
+                    if inputs["working_ion"] == "Na"
+                    else "90% marginal prediction interval; reliability may be lower outside the training domain."
+                ),
             ],
         }
         if (

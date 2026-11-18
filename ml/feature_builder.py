@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from pymatgen.core import Composition, Element
 
-IONS = ["Li", "Mg", "Ca", "Zn", "Y", "Al"]
+IONS = ["Na", "Li", "Mg", "Ca", "Zn", "Y", "Al"]
 SYSTEMS = [
     "Triclinic",
     "Monoclinic",

@@ -17,7 +17,7 @@ router = APIRouter()
 class PredictInput(BaseModel):
     material_id: str | None = None
     formula: str = Field(default="", max_length=150)
-    working_ion: Ion = "Li"
+    working_ion: Ion | Literal["Na"] = "Li"
     crystal_system: str | None = None
     space_group_number: int | None = Field(default=None, ge=1, le=230)
     frac_discharge: float | None = Field(default=None, gt=0, lt=1)

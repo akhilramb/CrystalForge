@@ -8,8 +8,8 @@ import {
   MaterialCard,
   Actions,
 } from "../components/UI";
-import { ions, systems, fmt } from "../services/api";
-import type { MaterialPage } from "../services/contracts";
+import { api, ions, systems, fmt } from "../services/api";
+import type { MaterialPage, PredictionResponse } from "../services/contracts";
 
 export default function Materials() {
   const [filter, setFilter] = useState<Record<string, string>>({
@@ -20,6 +20,26 @@ export default function Materials() {
     }),
     [page, setPage] = useState(1),
     [view, setView] = useState("cards");
+  const [estimate, setEstimate] = useState<PredictionResponse | null>(null);
+  const [predictionError, setPredictionError] = useState("");
+  const [predicting, setPredicting] = useState(false);
+  async function predictFormula() {
+    const formula = filter.q.trim();
+    if (!formula || !filter.ion || predicting) return;
+    setEstimate(null);
+    setPredictionError("");
+    setPredicting(true);
+    try {
+      setEstimate(await api<PredictionResponse>("/predict", {
+        formula,
+        working_ion: filter.ion,
+      }));
+    } catch (reason) {
+      setPredictionError(reason instanceof Error ? reason.message : "Prediction unavailable.");
+    } finally {
+      setPredicting(false);
+    }
+  }
   const params = new URLSearchParams(
     Object.fromEntries(
       Object.entries({ ...filter, page: String(page), page_size: "12" })
@@ -52,8 +72,8 @@ export default function Materials() {
           onChange={(e) => change("ion", e.target.value)}
         >
           <option value="">All working ions</option>
-          {ions.map((x) => (
-            <option key={x}>{x}</option>
+          {[...ions, "Na"].map((x) => (
+            <option key={x} value={x}>{x === "Na" ? "Na (sodium)" : x}</option>
           ))}
         </select>
         <select
@@ -113,6 +133,23 @@ export default function Materials() {
           </div>
         </details>
       </section>
+      {filter.q.trim() && (
+        <div className="results-heading">
+          <button type="button" className="ghost" disabled={!filter.ion || predicting} onClick={() => void predictFormula()}>
+            {predicting ? "Estimating voltage…" : "Estimate voltage for this formula"}
+          </button>
+          {!filter.ion && <p>Select a working ion to estimate voltage.</p>}
+        </div>
+      )}
+      {predictionError && <p role="alert">{predictionError}</p>}
+      {estimate && (
+        <section className="panel" aria-label="Formula voltage estimate" aria-live="polite">
+          <h3>{estimate.formula} · {estimate.working_ion}-ion</h3>
+          <p><strong>{fmt(estimate.predicted_voltage)} V</strong> · {estimate.working_ion === "Na" ? "Exploratory estimate" : "ML screening estimate"}</p>
+          <p>Formula input. Crystal structure unspecified.</p>
+          {estimate.warnings?.map((warning) => <p key={warning}>{warning}</p>)}
+        </section>
+      )}
       <div className="results-heading">
         <p>{data?.total.toLocaleString() || 0} material records</p>
         <div className="segmented">
