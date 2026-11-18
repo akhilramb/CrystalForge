@@ -32,7 +32,7 @@
 }
 [data-theme="dark"] :is(
   .segmented, .segmented button.active, .notice, .tag, .pill, .empty-symbol,
-  .compare-button span, .selected-row td, .compare-tray, .account-avatar,
+  .compare-button span, .selected-row td, .account-avatar,
   .account-card-icon, .account-nav .selected, .auth-mobile-mark
 ),
 [data-theme="dark"] :is(.dropdown a, .button.outline, .ghost, .feature, .account-nav a, .nav-account, .nav-login):hover,

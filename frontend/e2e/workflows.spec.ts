@@ -33,7 +33,7 @@ test("prediction, discovery and comparison", async ({ page }) => {
     .getByRole("button", { name: "Compare", exact: true })
     .nth(0)
     .click();
-  await page.getByRole("link", { name: /Compare shortlist/ }).click();
+  await page.getByRole("link", { name: "Compare 2 materials", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Predicted electrode voltage · V" }),
   ).toBeVisible();

@@ -281,12 +281,6 @@ function App() {
           </button>
         </div>
       )}
-      {compare.length > 0 && location.pathname != "/compare" && (
-        <Link className="compare-tray" to="/compare">
-          <Layers size={18} />
-          Compare shortlist <span>{compare.length}/4</span>
-        </Link>
-      )}
     </Context.Provider>
   );
 }

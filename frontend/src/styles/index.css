@@ -1177,25 +1177,6 @@ dd {
   color: white;
   display: flex;
 }
-.compare-tray {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  background: #d5e69d;
-  color: #354328;
-  border: 1px solid #a3b96a;
-  padding: 12px 20px;
-  border-radius: 30px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.84rem;
-  box-shadow: 0 4px 18px #0001;
-  z-index: 40;
-}
-.compare-tray span {
-  font-weight: 650;
-}
 .skip {
   position: absolute;
   top: -60px;
@@ -1585,12 +1566,6 @@ li {
   .toast {
     bottom: 80px;
     width: max-content;
-  }
-  .compare-tray {
-    right: 16px;
-    bottom: 16px;
-    font-size: 0.78rem;
-    padding: 11px 15px;
   }
   footer {
     flex-direction: column;
