@@ -66,7 +66,7 @@ def test_assistant_uses_catalog_context_and_never_returns_provider_key(monkeypat
         async def post(self, url, *, headers, json):
             self.request_headers = headers
             self.request_json = json
-            assert url.endswith("/models/gemini-3.8-flash:generateContent")
+            assert url.endswith("/models/gemini-3.1-flash-lite:generateContent")
             assert headers["x-goog-api-key"] == "test-only-key"
             assert "cf-00001" in json["systemInstruction"]["parts"][0]["text"]
             return Response()

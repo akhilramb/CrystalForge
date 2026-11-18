@@ -1,8 +1,9 @@
 """A small, catalog-grounded research assistant for the public workspace."""
 
-from collections import OrderedDict, defaultdict, deque
+from collections import OrderedDict, deque
 from typing import Literal
 import json
+import logging
 import os
 import re
 import time
@@ -15,6 +16,7 @@ from backend.services.catalog import catalog
 from backend.services.storage import session_id
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 _requests: OrderedDict[str, deque[float]] = OrderedDict()
 _all_requests: deque[float] = deque()
@@ -135,7 +137,7 @@ async def chat(payload: ChatRequest):
             "The research assistant is not configured yet. Add GEMINI_API_KEY to the Render environment and redeploy.",
         )
 
-    model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip()
+    model = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite").strip()
     if not re.fullmatch(r"gemini-[A-Za-z0-9.-]+", model):
         raise HTTPException(503, "The research assistant model configuration is invalid.")
 
@@ -187,6 +189,20 @@ async def chat(payload: ChatRequest):
     except httpx.HTTPError:
         raise HTTPException(502, "The research assistant is temporarily unreachable. Please try again.")
 
+    if response.status_code >= 400:
+        try:
+            provider_status = response.json()["error"]["status"]
+        except (KeyError, TypeError, ValueError):
+            provider_status = None
+        if not isinstance(provider_status, str) or not re.fullmatch(r"[A-Z_]{1,48}", provider_status):
+            provider_status = "UNKNOWN"
+        logger.warning("Gemini request failed: HTTP %d (%s), model=%s", response.status_code, provider_status, model)
+        if response.status_code in (401, 403) or provider_status in ("UNAUTHENTICATED", "PERMISSION_DENIED"):
+            raise HTTPException(503, "Gemini denied access. Ask the project administrator to check the API key and project permissions.")
+        if response.status_code == 404:
+            raise HTTPException(503, "The configured Gemini model is unavailable. Ask the project administrator to check the model setting.")
+        if response.status_code == 402 or provider_status == "FAILED_PRECONDITION":
+            raise HTTPException(503, "Gemini could not run with the current project settings. Ask the project administrator to check model and region eligibility.")
     if response.status_code == 429:
         raise HTTPException(503, "The research assistant is busy. Please try again shortly.")
     if response.status_code >= 400:

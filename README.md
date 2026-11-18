@@ -150,7 +150,7 @@ and set the deploy branch to the Git branch containing these changes. In
 dashboard. To enable the Research Assistant, add `GEMINI_API_KEY` from Google
 AI Studio directly to Render's environment settings. The key stays on the
 backend; never use a `VITE_` variable or commit it. `GEMINI_MODEL` is optional
-and defaults to `gemini-3.8-flash`. Save the environment and let Render deploy.
+and defaults to `gemini-3.1-flash-lite`. Save the environment and let Render deploy.
 Render also builds and deploys when you push a new commit to the configured
 branch.
 
