@@ -51,10 +51,12 @@ const AuthCallback = lazy(() =>
 );
 const Account = lazy(() => import("./pages/Account"));
 import { ThemeToggle } from "./components/ThemeToggle";
+import ResearchAssistant from "./components/ResearchAssistant";
 import "./styles/index.css";
 import "./styles/theme.css";
 import "./styles/auth.css";
 import "./styles/motion.css";
+import "./styles/assistant.css";
 function App() {
   const auth = useAuth();
   const [menu, setMenu] = useState(false),
@@ -257,6 +259,7 @@ function App() {
           </Routes>
         </Suspense>
       </main>
+      {!authPage && <ResearchAssistant />}
       {!authPage && (
         <footer>
           <Link className="brand" to="/">

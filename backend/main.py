@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 
 from backend.config import ROOT
-from backend.routes import accounts, insights, materials, predictions
+from backend.routes import accounts, assistant, insights, materials, predictions
 from backend.services import storage
 
 app = FastAPI(title="CrystalForge", version="1.0.0")
@@ -34,7 +34,7 @@ async def browser_session(request, call_next):
         storage.session_id.reset(token)
 
 
-for module in (materials, predictions, accounts, insights):
+for module in (materials, predictions, accounts, insights, assistant):
     app.include_router(module.router)
 
 

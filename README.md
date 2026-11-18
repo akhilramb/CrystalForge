@@ -1,6 +1,6 @@
 # CrystalForge
 
-A full-stack battery-material screening application built with React, TypeScript, Vite and FastAPI. It includes a trained voltage model, the supplied 6,185-record dataset, reference-based elemental economics, discovery ranking, comparison, a Materials Project crystal workspace, and optional Supabase accounts for private research history and saved materials.
+A full-stack battery-material screening application built with React, TypeScript, Vite and FastAPI. It includes a trained voltage model, the supplied 6,185-record dataset, reference-based elemental economics, discovery ranking, comparison, a Materials Project crystal workspace, an optional catalog-grounded research assistant, and Supabase accounts for private research history and saved materials.
 
 ## Run on Windows (PowerShell)
 
@@ -48,6 +48,7 @@ Open the Vite URL printed in the terminal. Vite proxies `/api` to port 8000. To 
 - **History:** account-owned prediction and discovery runs, open, rerun, compare catalog predictions and delete (requires sign in).
 - **Saved materials:** account-owned bookmarks and research notes (requires sign in).
 - **Reports:** PDF and CSV downloads for catalog profiles and saved predictions (requires sign in; downloaded reports are not stored as files on the server).
+- **Research Assistant:** optional floating chat panel for product and scientific workflow questions. On material and structure pages it receives the selected catalog record from the backend; it does not invent missing properties or replace DFT/experimental validation. Messages are sent to Gemini for a reply and are not stored in CrystalForge history. Google API quota and any billing depend on the Google project attached to the key.
 - **Accounts:** email/password signup and sign-in, email verification, password reset, Google/GitHub OAuth, profile, preferences, login history and account deletion.
 
 ## Scientific interpretation
@@ -113,6 +114,7 @@ Remove the relevant cached CIF to request a fresh copy.
 ```text
 frontend/src/      React routes, components, API client, responsive styles
 backend/           FastAPI routes, data validation and static build serving
+backend/routes/    Catalog, assistant, account, prediction and insight APIs
 backend/services/  Catalog, auth token verification, economics, discovery, exports
 supabase/          Auth-owned tables, grants and Row Level Security migration
 ml/                Shared feature builder and offline training/evaluation
@@ -145,7 +147,12 @@ The repository includes a Dockerfile and `render.yaml`. The existing Render
 web service uses the Free instance type. In its dashboard, open **Settings**
 and set the deploy branch to the Git branch containing these changes. In
 **Environment**, set `MP_API_KEY` using a value from the Materials Project
-dashboard. Render builds and deploys when you push a new commit to that branch.
+dashboard. To enable the Research Assistant, add `GEMINI_API_KEY` from Google
+AI Studio directly to Render's environment settings. The key stays on the
+backend; never use a `VITE_` variable or commit it. `GEMINI_MODEL` is optional
+and defaults to `gemini-3.8-flash`. Save the environment and let Render deploy.
+Render also builds and deploys when you push a new commit to the configured
+branch.
 
 Free web services spin down after 15 minutes without incoming traffic and can
 take about a minute to wake on the next request. The Free plan does not offer
