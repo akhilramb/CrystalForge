@@ -114,7 +114,7 @@ export default function Predict() {
       if (result) setPrevious(result);
       setResult(r);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Request failed.");
+      setError(e instanceof TypeError ? "Could not reach CrystalForge. Check your connection and try again." : e instanceof Error ? e.message : "Request failed.");
     } finally {
       setBusy(false);
     }
@@ -136,14 +136,14 @@ export default function Predict() {
             <button
               type="button"
               className={mode === "formula" ? "active" : ""}
-              onClick={() => setMode("formula")}
+              onClick={() => { setMode("formula"); setError(""); }}
             >
               Enter formula
             </button>
             <button
               type="button"
               className={mode === "catalog" ? "active" : ""}
-              onClick={() => setMode("catalog")}
+              onClick={() => { setMode("catalog"); setError(""); }}
             >
               From catalog
             </button>
@@ -157,6 +157,7 @@ export default function Predict() {
                   value={query}
                   onChange={async (e) => {
                     setQuery(e.target.value);
+                    setError("");
                     try {
                       setMatches(
                         (
@@ -168,7 +169,7 @@ export default function Predict() {
                         ).items,
                       );
                     } catch (e) {
-                      setError(e instanceof Error ? e.message : "Request failed.");
+                      setError(e instanceof TypeError ? "Could not reach CrystalForge. Check your connection and try again." : e instanceof Error ? e.message : "Request failed.");
                     }
                   }}
                 />
@@ -192,8 +193,8 @@ export default function Predict() {
                 </select>
               </label>
               <p className="muted">
-                Retrieves the record’s exact descriptors. Individual catalog
-                predictions are not independent test results.
+                Select an existing record here. To predict a formula outside the
+                catalog, use Enter formula.
               </p>
             </>
           ) : (
@@ -213,8 +214,8 @@ export default function Predict() {
                   value={form.working_ion}
                   onChange={(e) => change("working_ion", e.target.value)}
                 >
-                  {ions.map((x) => (
-                    <option key={x}>{x}</option>
+                  {[...ions, "Na"].map((x) => (
+                    <option key={x} value={x}>{x === "Na" ? "Na (sodium)" : x}</option>
                   ))}
                 </select>
               </label>
